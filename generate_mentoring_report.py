@@ -17,6 +17,8 @@ from jinja2 import Template
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 
+from preprocess_documents import preprocess_directory
+
 console = Console()
 
 
@@ -83,19 +85,33 @@ def ensure_plugin_installed():
         console.print(f"  [yellow]Warning:[/yellow] Plugin setup error: {e}")
 
 
-def call_claude_code(directory: Path, prompt_template: str, files: list[Path]) -> dict:
+def call_claude_code(directory: Path, prompt_template: str, files: list[Path], preprocessed_data: dict = None) -> dict:
     """
     Call Claude Code CLI to analyze business files.
+    Uses preprocessed data when available to reduce token usage.
     Returns parsed JSON response.
     """
-    # Build file context
-    file_list = "\n".join([f"- {f.name}" for f in files])
-    files_context = f"Business files to analyze:\n{file_list}\n\nAnalyze ALL these files thoroughly."
+    # Build file context based on whether we have preprocessed data
+    if preprocessed_data:
+        # Use preprocessed structured data
+        files_context = "Pre-processed business document data (structured extraction to preserve context while reducing tokens):\n\n"
+        files_context += json.dumps(preprocessed_data, ensure_ascii=False, indent=2)
+
+        analysis_approach = """The data has been pre-processed to extract maximum information while managing token limits:
+        - Excel files: Complete extraction with tables, formulas, comments, key figures
+        - PDF/DOCX files: Will be read using document-skills for full context
+
+        For files marked as 'requires_claude_skills', use Skill(pdf) or Skill(docx) to read the full content.
+        Combine the structured data with document content for comprehensive analysis."""
+    else:
+        # Original approach: direct file reading
+        file_list = "\n".join([f"- {f.name}" for f in files])
+        files_context = f"Business files to analyze:\n{file_list}\n\nAnalyze ALL these files thoroughly."
+        analysis_approach = "Read each file using document-skills (xlsx, pdf, docx). Extract all financial data, credit scores, and business information."
 
     # Prepare full prompt
     full_prompt = prompt_template.replace("{files_context}", files_context)
-    full_prompt = full_prompt.replace("{analysis_approach}",
-        "Read each file using document-skills (xlsx, pdf, docx). Extract all financial data, credit scores, and business information.")
+    full_prompt = full_prompt.replace("{analysis_approach}", analysis_approach)
     full_prompt = full_prompt.replace("{additional_instructions}",
         "\n\nIMPORTANT: Output ONLY valid JSON following the schema. Do not include explanations before or after the JSON.")
 
@@ -228,36 +244,53 @@ def main():
         progress.update(task2, completed=100)
         console.print("  Prompt template loaded\n")
 
-        # Step 3: Ensure plugin installed
-        task3 = progress.add_task("Ensuring document-skills plugin available...", total=100)
+        # Step 3: Pre-process documents
+        task3 = progress.add_task("Pre-processing documents (extracting structured data)...", total=100)
+        preprocessed_path = directory / "preprocessed_data.json"
+        try:
+            preprocessed_data = preprocess_directory(directory, output_path=None)
+            progress.update(task3, completed=100)
+            console.print(f"  Preprocessed {len(preprocessed_data['files'])} files\n")
+
+            # Save preprocessed data for debugging
+            with open(preprocessed_path, 'w', encoding='utf-8') as f:
+                json.dump(preprocessed_data, f, ensure_ascii=False, indent=2)
+            console.print(f"  Debug: Saved preprocessed data to {preprocessed_path}\n")
+        except Exception as e:
+            console.print(f"[yellow]Warning:[/yellow] Preprocessing failed: {e}")
+            console.print("  Falling back to direct file reading\n")
+            preprocessed_data = None
+
+        # Step 4: Ensure plugin installed
+        task4 = progress.add_task("Ensuring document-skills plugin available...", total=100)
         ensure_plugin_installed()
-        progress.update(task3, completed=100)
+        progress.update(task4, completed=100)
         console.print("  Plugin configured\n")
 
-        # Step 4: Call Claude Code
-        task4 = progress.add_task("Analyzing with Claude Code (this may take 5-10 minutes)...", total=None)
+        # Step 5: Call Claude Code
+        task5 = progress.add_task("Analyzing with Claude Code (this may take 5-10 minutes)...", total=None)
         try:
-            json_data = call_claude_code(directory, prompt_template, files)
-            progress.update(task4, completed=100)
+            json_data = call_claude_code(directory, prompt_template, files, preprocessed_data)
+            progress.update(task5, completed=100)
             console.print("  Analysis complete\n")
         except Exception as e:
             progress.stop()
             console.print(f"[red]Error during Claude analysis:[/red] {e}")
             sys.exit(1)
 
-        # Step 5: Save intermediate JSON
-        task5 = progress.add_task("Saving intermediate JSON...", total=100)
+        # Step 6: Save intermediate JSON
+        task6 = progress.add_task("Saving intermediate JSON...", total=100)
         json_output_path = directory / "mentoring_analysis.json"
         with open(json_output_path, 'w', encoding='utf-8') as f:
             json.dump(json_data, f, ensure_ascii=False, indent=2)
-        progress.update(task5, completed=100)
+        progress.update(task6, completed=100)
         console.print(f"  Saved: {json_output_path}\n")
 
-        # Step 6: Render HTML
-        task6 = progress.add_task("Rendering HTML report...", total=100)
+        # Step 7: Render HTML
+        task7 = progress.add_task("Rendering HTML report...", total=100)
         output_path = generate_output_filename(json_data, directory)
         render_html_report(json_data, html_template_path, logo_path, output_path)
-        progress.update(task6, completed=100)
+        progress.update(task7, completed=100)
 
     console.print(f"\n[bold green]Success![/bold green]")
     console.print(f"Report generated: [cyan]{output_path}[/cyan]")
