@@ -99,4 +99,10 @@ The tool uses a **hybrid approach** to balance completeness with token efficienc
 - Claude reads full documents using document-skills plugin
 - Preserves narrative context, business sophistication signals, formatting cues
 
+**Image files (PNG, JPG, etc.):**
+- Metadata extraction (dimensions, format, aspect ratio)
+- Intelligent content hints based on filename and characteristics
+- OCR detection for document-like images
+- Claude uses multimodal vision to analyze actual content
+
 This approach solves token limit issues while maintaining high-quality mentoring analysis.

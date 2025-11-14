@@ -13,6 +13,7 @@ from datetime import datetime
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.comments import Comment
+from PIL import Image
 
 
 def extract_excel_data(file_path: Path) -> dict[str, Any]:
@@ -124,6 +125,80 @@ def extract_docx_data(file_path: Path) -> dict[str, Any]:
     }
 
 
+def extract_image_data(file_path: Path) -> dict[str, Any]:
+    """Extract comprehensive metadata and analysis hints from image files."""
+    try:
+        with Image.open(file_path) as img:
+            width, height = img.size
+            format_name = img.format
+            mode = img.mode
+
+            # Calculate aspect ratio
+            aspect_ratio = width / height if height > 0 else 0
+
+            # Determine likely image type based on characteristics
+            image_hints = []
+
+            # Aspect ratio hints
+            if 0.9 < aspect_ratio < 1.1:
+                image_hints.append("square_format")
+            elif aspect_ratio > 1.4:
+                image_hints.append("landscape_document")
+            elif aspect_ratio < 0.7:
+                image_hints.append("portrait_document")
+
+            # Size-based hints
+            total_pixels = width * height
+            if total_pixels > 2_000_000:
+                image_hints.append("high_resolution")
+            elif total_pixels < 300_000:
+                image_hints.append("low_resolution_thumbnail")
+
+            # Common document dimensions (A4 at various DPIs)
+            if 800 < width < 900 and 1100 < height < 1200:
+                image_hints.append("likely_scanned_a4_document")
+
+            # File name analysis for content hints
+            filename_lower = file_path.name.lower()
+            content_hints = []
+
+            # Greek tax/financial keywords
+            if any(keyword in filename_lower for keyword in ['ενφια', 'enfia', 'ε1', 'ε3', 'φπα', 'vat']):
+                content_hints.append("likely_tax_document")
+            elif any(keyword in filename_lower for keyword in ['ασφαλιστ', 'insurance', 'social']):
+                content_hints.append("likely_insurance_document")
+            elif any(keyword in filename_lower for keyword in ['teiresias', 'τειρεσιας', 'credit']):
+                content_hints.append("likely_credit_report")
+            elif any(keyword in filename_lower for keyword in ['logo', 'λογότυπο']):
+                content_hints.append("likely_logo_image")
+            elif any(keyword in filename_lower for keyword in ['chart', 'graph', 'διάγραμμα']):
+                content_hints.append("likely_chart_or_graph")
+
+            # Suggest OCR if likely document
+            needs_ocr = any(hint in content_hints for hint in
+                          ['likely_tax_document', 'likely_insurance_document', 'likely_credit_report'])
+            needs_ocr = needs_ocr or 'likely_scanned_a4_document' in image_hints
+
+            return {
+                "width": width,
+                "height": height,
+                "format": format_name,
+                "color_mode": mode,
+                "aspect_ratio": round(aspect_ratio, 2),
+                "total_pixels": total_pixels,
+                "image_characteristics": image_hints,
+                "content_hints": content_hints,
+                "likely_needs_ocr": needs_ocr,
+                "extraction_notes": "Image requires Claude vision analysis for content extraction"
+            }
+
+    except Exception as e:
+        return {
+            "error": str(e),
+            "extraction_notes": "Could not read image metadata"
+        }
+
+
 def extract_key_excerpts(text: str, keywords: list[str] = None) -> list[str]:
     """Extract key excerpts from text based on keywords and context."""
     if keywords is None:
@@ -220,6 +295,17 @@ def preprocess_document(file_path: Path) -> dict[str, Any]:
             result["structured_data"] = extract_docx_data(file_path)
             result["extraction_status"] = "requires_claude_skills"
 
+        elif file_path.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff']:
+            image_data = extract_image_data(file_path)
+            result["structured_data"] = image_data
+            result["extraction_status"] = "requires_claude_vision"
+
+            # Add helpful analysis prompt for Claude
+            if image_data.get("likely_needs_ocr"):
+                result["analysis_suggestion"] = "Use Read tool to view and OCR this image for text extraction"
+            else:
+                result["analysis_suggestion"] = "Use Read tool to view this image and describe its content"
+
         else:
             result["extraction_status"] = "unsupported_format"
 
@@ -239,7 +325,7 @@ def preprocess_directory(directory: Path, output_path: Path = None) -> dict[str,
     directory = Path(directory)
 
     # Discover files
-    extensions = ['.pdf', '.xlsx', '.xls', '.docx', '.doc']
+    extensions = ['.pdf', '.xlsx', '.xls', '.docx', '.doc', '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff']
     files = []
     for ext in extensions:
         files.extend(directory.glob(f"*{ext}"))
