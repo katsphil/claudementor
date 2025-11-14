@@ -1,0 +1,31 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Claude local config
+.claude/
+
+# Data directories (business files)
+ΤΟΣΙΟΣ ΚΩΝΣΤΑΝΤΙΝΟΣ - 071477247 - ΕΑΤ/
+
+# Generated outputs
+mentoring_report_*.html
+mentoring_analysis.json
+output.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
