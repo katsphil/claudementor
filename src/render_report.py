@@ -36,7 +36,9 @@ def render_report(json_path: Path, output_path: Path, template_path: Path, logo_
 
     # Add metadata
     data["generated_date"] = datetime.now().strftime("%d/%m/%Y")
+    data["generation_date"] = datetime.now().strftime("%d/%m/%Y")
     data["logo_base64"] = logo_base64
+    data["now"] = datetime.now  # For template compatibility
 
     # Render
     html = template.render(**data)
@@ -53,11 +55,11 @@ def main():
         print("Usage: uv run render_report.py <input.json> [output.html]")
         sys.exit(1)
 
-    script_dir = Path(__file__).parent
+    project_root = Path(__file__).parent.parent
     json_path = Path(sys.argv[1])
     output_path = Path(sys.argv[2]) if len(sys.argv) > 2 else json_path.with_suffix(".html")
-    template_path = script_dir / "mentoring_report_template.html"
-    logo_path = script_dir / "microsmart logo.jpeg"
+    template_path = project_root / "templates" / "mentoring_report_template.html"
+    logo_path = project_root / "templates" / "microsmart logo.jpeg"
 
     if not json_path.exists():
         print(f"Error: Input file not found: {json_path}")

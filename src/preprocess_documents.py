@@ -9,11 +9,16 @@ import re
 from pathlib import Path
 from typing import Any
 from datetime import datetime
+import warnings
 
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.comments import Comment
 from PIL import Image
+
+# Silence pandas warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
+pd.options.mode.chained_assignment = None
 
 
 def extract_excel_data(file_path: Path) -> dict[str, Any]:
@@ -103,6 +108,22 @@ def extract_excel_data(file_path: Path) -> dict[str, Any]:
     return result
 
 
+def extract_pdf_text_sample(file_path: Path) -> str:
+    """Extract first 200 words from PDF for classification."""
+    try:
+        import PyPDF2
+        with open(file_path, 'rb') as f:
+            reader = PyPDF2.PdfReader(f)
+            text = ""
+            for page_num in range(min(2, len(reader.pages))):
+                text += reader.pages[page_num].extract_text()
+
+            words = text.split()[:200]
+            return " ".join(words)
+    except:
+        return f"[PDF file: {file_path.name}]"
+
+
 def extract_pdf_data(file_path: Path) -> dict[str, Any]:
     """Extract comprehensive data from PDF files using Claude Code skills."""
     # Note: This will be called by Claude Code with document-skills plugin
@@ -110,8 +131,26 @@ def extract_pdf_data(file_path: Path) -> dict[str, Any]:
     return {
         "extraction_method": "claude_document_skills",
         "requires_processing": True,
-        "file_path": str(file_path)
+        "file_path": str(file_path),
+        "text_sample": extract_pdf_text_sample(file_path)
     }
+
+
+def extract_docx_text_sample(file_path: Path) -> str:
+    """Extract first 200 words from DOCX for classification."""
+    try:
+        from docx import Document
+        doc = Document(file_path)
+        text = ""
+        for para in doc.paragraphs:
+            text += para.text + " "
+            if len(text.split()) >= 200:
+                break
+
+        words = text.split()[:200]
+        return " ".join(words)
+    except:
+        return f"[DOCX file: {file_path.name}]"
 
 
 def extract_docx_data(file_path: Path) -> dict[str, Any]:
@@ -121,7 +160,8 @@ def extract_docx_data(file_path: Path) -> dict[str, Any]:
     return {
         "extraction_method": "claude_document_skills",
         "requires_processing": True,
-        "file_path": str(file_path)
+        "file_path": str(file_path),
+        "text_sample": extract_docx_text_sample(file_path)
     }
 
 

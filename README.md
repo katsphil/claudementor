@@ -105,4 +105,3 @@ The tool uses a **hybrid approach** to balance completeness with token efficienc
 - OCR detection for document-like images
 - Claude uses multimodal vision to analyze actual content
 
-This approach solves token limit issues while maintaining high-quality mentoring analysis.
