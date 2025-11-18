@@ -694,4 +694,18 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        # Set up logging if not already done
+        try:
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Fatal error: {e}")
+        except:
+            # Fallback if logging not initialized
+            setup_logging(log_file="app.log")
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Fatal error: {e}")
+
+        # Re-raise to show in terminal too
+        raise
