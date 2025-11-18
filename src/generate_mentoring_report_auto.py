@@ -42,6 +42,7 @@ from src.preprocess_documents import preprocess_directory
 from src.classify_files_llm import classify_files_with_llm, prepare_file_summary
 from src.sharepoint_graph_client import GraphSharePointClient
 from src.logging_config import setup_logging
+from src.video_processing import transcribe_and_save, VIDEO_EXTENSIONS
 
 # Load environment variables
 load_dotenv()
@@ -49,16 +50,26 @@ load_dotenv()
 console = Console()
 
 
-def discover_files(directory: Path) -> list[Path]:
-    """Discover all business document files in directory."""
-    extensions = ['.pdf', '.xlsx', '.xls', '.docx', '.doc', '.jpeg', '.jpg', '.png']
-    files = []
+def discover_files(directory: Path) -> tuple[list[Path], list[Path]]:
+    """
+    Discover all business document files in directory.
+    Returns: (document_files, video_files)
+    """
+    doc_extensions = ['.pdf', '.xlsx', '.xls', '.docx', '.doc', '.jpeg', '.jpg', '.png', '.txt']
+    doc_files = []
+    video_files = []
 
-    for ext in extensions:
-        files.extend(directory.glob(f"*{ext}"))
-        files.extend(directory.glob(f"**/*{ext}"))
+    # Find document files
+    for ext in doc_extensions:
+        doc_files.extend(directory.glob(f"*{ext}"))
+        doc_files.extend(directory.glob(f"**/*{ext}"))
 
-    return sorted(set(files))
+    # Find video files
+    for ext in VIDEO_EXTENSIONS:
+        video_files.extend(directory.glob(f"*{ext}"))
+        video_files.extend(directory.glob(f"**/*{ext}"))
+
+    return sorted(set(doc_files)), sorted(set(video_files))
 
 
 def classify_files_by_section_llm(files: list[Path], directory: Path) -> tuple[dict, dict]:
@@ -474,8 +485,28 @@ def main():
 
     # Phase 1: Document Discovery
     logger.info("Phase 1: Discovering business documents...")
-    files = discover_files(directory)
-    logger.info(f"Found {len(files)} documents")
+    doc_files, video_files = discover_files(directory)
+    logger.info(f"Found {len(doc_files)} documents and {len(video_files)} videos")
+
+    # Phase 1.5: Video Transcription (if any videos found)
+    if video_files:
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            logger.warning("OPENAI_API_KEY not found in .env - skipping video transcription")
+            logger.warning(f"Skipping {len(video_files)} video files")
+        else:
+            logger.info(f"Transcribing {len(video_files)} video files...")
+            for video_file in video_files:
+                try:
+                    transcript_path = transcribe_and_save(video_file, directory, api_key)
+                    doc_files.append(transcript_path)
+                    logger.info(f"Added transcript: {transcript_path.name}")
+                except Exception as e:
+                    logger.error(f"Failed to transcribe {video_file.name}: {e}")
+                    continue
+
+    files = doc_files
+    logger.info(f"Total files to process: {len(files)}")
 
     # Phase 2: File Classification (LLM-based)
     logger.info("Phase 2: Classifying files by section relevance...")

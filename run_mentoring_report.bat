@@ -26,8 +26,68 @@ if %ERRORLEVEL% NEQ 0 (
 echo [OK] UV found
 echo.
 
+:: Check for FFmpeg
+echo [2/5] Checking FFmpeg for video processing...
+ffmpeg -version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo FFmpeg not found. Attempting automatic installation...
+
+    REM Try winget first (built into Windows 10/11)
+    echo Trying Windows Package Manager (winget)...
+    winget install --id=Gyan.FFmpeg --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo [OK] FFmpeg installed via winget
+        goto ffmpeg_success
+    )
+
+    REM Try chocolatey
+    echo winget failed. Trying Chocolatey...
+    choco install ffmpeg -y >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo [OK] FFmpeg installed via Chocolatey
+        goto ffmpeg_success
+    )
+
+    REM Try scoop
+    echo Chocolatey failed. Trying Scoop...
+    scoop install ffmpeg >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo [OK] FFmpeg installed via Scoop
+        goto ffmpeg_success
+    )
+
+    REM All automatic methods failed
+    echo.
+    echo [WARNING] Could not automatically install FFmpeg
+    echo FFmpeg is required for video transcription support
+    echo.
+    echo To install FFmpeg manually:
+    echo   1. Download from: https://ffmpeg.org/download.html
+    echo   2. Install via winget: winget install Gyan.FFmpeg
+    echo   3. Install via Chocolatey: choco install ffmpeg
+    echo   4. Install via Scoop: scoop install ffmpeg
+    echo.
+    echo You can continue without FFmpeg, but video files will be skipped.
+    echo.
+    set /p CONTINUE="Continue anyway? (y/n): "
+    if /i "!CONTINUE!" NEQ "y" (
+        echo Installation cancelled
+        pause
+        exit /b 1
+    )
+    goto ffmpeg_done
+
+    :ffmpeg_success
+    echo FFmpeg installed! PATH will be refreshed automatically...
+
+    :ffmpeg_done
+) else (
+    echo [OK] FFmpeg found
+)
+echo.
+
 :: Check for Claude Code CLI
-echo [2/4] Checking Claude Code...
+echo [3/5] Checking Claude Code...
 where claude >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Claude Code not found
@@ -43,7 +103,7 @@ echo [OK] Claude Code found
 echo.
 
 :: Check for document-skills plugin
-echo [3/4] Checking document-skills plugin...
+echo [4/5] Checking document-skills plugin...
 claude skill list 2>nul | findstr /C:"document-skills" >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo [WARNING] Document-skills plugin not found
@@ -62,7 +122,7 @@ if %ERRORLEVEL% NEQ 0 (
 echo.
 
 :: Check for .env file
-echo [4/4] Checking configuration...
+echo [5/5] Checking configuration...
 if not exist ".env" (
     if exist ".env.example" (
         echo Creating .env from template...
