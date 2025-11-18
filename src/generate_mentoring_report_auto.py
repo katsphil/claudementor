@@ -8,10 +8,17 @@ Generates comprehensive 11-section mentoring reports for Greek SMEs by:
 3. Compiling into final JSON and rendering HTML
 
 Usage:
-    uv run generate_mentoring_report_auto.py <business_directory>
+    # AFM-based (searches SharePoint)
+    uv run generate_mentoring_report_auto.py --afm 071477247
+
+    # Direct folder path (backward compatible)
+    uv run generate_mentoring_report_auto.py "path/to/business/folder"
+
+    # Interactive prompt
+    uv run generate_mentoring_report_auto.py
 
 Example:
-    uv run generate_mentoring_report_auto.py "ΤΟΣΙΟΣ ΚΩΝΣΤΑΝΤΙΝΟΣ - 071477247 - ΕΑΤ/mentoring"
+    uv run generate_mentoring_report_auto.py --afm 071477247
 """
 
 import sys
@@ -19,8 +26,10 @@ import json
 import subprocess
 import re
 import shutil
+import logging
 from pathlib import Path
 from datetime import datetime
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.panel import Panel
@@ -31,6 +40,11 @@ from src.render_report import render_report, load_logo
 from src.section_prompts import get_section_prompt
 from src.preprocess_documents import preprocess_directory
 from src.classify_files_llm import classify_files_with_llm, prepare_file_summary
+from src.sharepoint_graph_client import GraphSharePointClient
+from src.logging_config import setup_logging
+
+# Load environment variables
+load_dotenv()
 
 console = Console()
 
@@ -54,7 +68,7 @@ def classify_files_by_section_llm(files: list[Path], directory: Path) -> tuple[d
     Returns:
         tuple: (classification_dict, detailed_results)
     """
-    console.print("[yellow]Preprocessing files for intelligent classification...[/yellow]")
+    # Removed - now using logger in main()
 
     # Preprocess all files to extract content samples
     preprocessed = preprocess_directory(directory)
@@ -68,7 +82,7 @@ def classify_files_by_section_llm(files: list[Path], directory: Path) -> tuple[d
                 preprocessed_map[str(file_path)] = file_data.get("structured_data", {})
                 break
 
-    console.print("[yellow]Classifying files with Claude API (content-based analysis)...[/yellow]")
+    # Removed - now using logger in main()
 
     # Call LLM classification
     classification, detailed_results = classify_files_with_llm(files, preprocessed_map)
@@ -76,43 +90,33 @@ def classify_files_by_section_llm(files: list[Path], directory: Path) -> tuple[d
     return classification, detailed_results
 
 
-def extract_company_metadata(directory: Path, files: list[Path]) -> dict:
-    """Extract company name, AFM, KAD from files."""
-    metadata = {
-        "company_name": "",
-        "company_afm": "",
-        "company_kad": ""
-    }
+def extract_afm(directory: Path, provided_afm: str = None) -> str:
+    """Extract AFM for directory naming - either from user input or folder name."""
+    if provided_afm:
+        return provided_afm
 
-    # Try to extract from directory name first
+    # Try to extract from folder name
     dir_name = directory.parent.name if directory.name == 'mentoring' else directory.name
 
     # Pattern: "NAME - AFM - something"
     parts = dir_name.split(' - ')
-    if len(parts) >= 2:
-        metadata['company_name'] = parts[0].strip()
-        # Look for AFM pattern (9 digits)
-        for part in parts:
-            if re.match(r'^\d{9}$', part.strip()):
-                metadata['company_afm'] = part.strip()
-                break
+    for part in parts:
+        if re.match(r'^\d{9}$', part.strip()):
+            return part.strip()
 
-    # KAD will be inferred by Claude from business documents (E1, E3, business plan)
-    if not metadata['company_kad']:
-        metadata['company_kad'] = ''
-
-    return metadata
+    # Fallback
+    return "unknown"
 
 
 def generate_section_via_agent(section_num: int, company_info: dict, relevant_files: list[Path],
-                                output_dir: Path) -> dict:
+                                output_dir: Path, logger: logging.Logger) -> dict:
     """
     Generate a section using Claude Task agent - FULLY AUTOMATED.
 
     Returns the generated section dict.
     """
     start_time = datetime.now().strftime("%H:%M:%S")
-    console.print(f"\nSection {section_num} - Started: {start_time}")
+    logger.info(f"Section {section_num} - Started: {start_time}")
 
     # Get the prompt for this section
     prompt = get_section_prompt(section_num, company_info, relevant_files)
@@ -141,7 +145,7 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
         )
 
         if result.returncode != 0:
-            console.print(f"[red]Error calling Claude:[/red] {result.stderr}")
+            logger.error(f"Error calling Claude: {result.stderr}")
             return None
 
         # First, check if Claude already wrote the file directly (most common case)
@@ -150,10 +154,10 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
             try:
                 with open(section_file, 'r', encoding='utf-8') as f:
                     section_data = json.load(f)
-                console.print(f"[green][OK] Section {section_num} generated successfully[/green]")
+                logger.info(f"Section {section_num} generated successfully")
                 return section_data
             except Exception as e:
-                console.print(f"[red][ERROR] Section {section_num} - File exists but couldn't parse: {e}[/red]")
+                logger.error(f"Section {section_num} - File exists but couldn't parse: {e}")
                 return None
 
         # Parse JSON from Claude's output (fallback if file doesn't exist)
@@ -170,23 +174,23 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
             if json_match:
                 json_str = json_match.group(0)
             else:
-                console.print(f"[red][ERROR] Section {section_num} - Could not extract JSON from output[/red]")
+                logger.error(f"Section {section_num} - Could not extract JSON from output")
                 # Save output for debugging
                 debug_file = output_dir / f"section_{section_num}_output_debug.txt"
                 with open(debug_file, 'w', encoding='utf-8') as f:
                     f.write(output_text)
-                console.print(f"[dim]Debug output saved to: {debug_file}[/dim]")
+                logger.info(f"Debug output saved to: {debug_file}")
                 return None
 
         # Parse the JSON
         try:
             section_data = json.loads(json_str)
         except json.JSONDecodeError as e:
-            console.print(f"[red][ERROR] Section {section_num} - JSON parse error: {e}[/red]")
+            logger.error(f"Section {section_num} - JSON parse error: {e}")
             debug_file = output_dir / f"section_{section_num}_output_debug.txt"
             with open(debug_file, 'w', encoding='utf-8') as f:
                 f.write(json_str)
-            console.print(f"[dim]Debug output saved to: {debug_file}[/dim]")
+            logger.info(f"Debug output saved to: {debug_file}")
             return None
 
         # Save the generated section
@@ -194,12 +198,12 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
         with open(section_file, 'w', encoding='utf-8') as f:
             json.dump(section_data, f, ensure_ascii=False, indent=2)
 
-        console.print(f"[green][OK] Section {section_num} generated successfully[/green]")
+        logger.info(f"Section {section_num} generated successfully")
 
         return section_data
 
     except Exception as e:
-        console.print(f"[red]Error generating section {section_num}:[/red] {e}")
+        logger.error(f"Error generating section {section_num}: {e}")
         return None
 
 
@@ -207,10 +211,14 @@ def compile_final_report(sections: list[dict], company_info: dict, output_path: 
     """Compile all sections into final report JSON."""
 
     # Generate executive summary
+    company_name = company_info.get('company_name', 'την επιχείρηση')
+    afm = company_info.get('afm', '')
+    afm_text = f" (ΑΦΜ: {afm})" if afm else ""
+
     executive_summary = f"""
     <h2>Συνοπτική Παρουσίαση</h2>
-    <p>Η παρούσα αναφορά παρέχει μια ολοκληρωμένη ανάλυση και στρατηγική καθοδήγηση για την
-    <strong>{company_info['company_name']}</strong> (ΑΦΜ: {company_info['company_afm']}), με στόχο την ενίσχυση
+    <p>Η παρούσα αναφορά παρέχει μια ολοκληρωμένη ανάλυση και στρατηγική καθοδήγηση για
+    <strong>{company_name}</strong>{afm_text}, με στόχο την ενίσχυση
     της ανταγωνιστικότητας, τη βελτίωση της οικονομικής απόδοσης και την ψηφιακή μετάβαση της επιχείρησης.</p>
 
     <h3>Βασικά Ευρήματα</h3>
@@ -284,10 +292,11 @@ def compile_final_report(sections: list[dict], company_info: dict, output_path: 
         ]
 
     report = {
-        "company_name": company_info['company_name'],
-        "company_afm": company_info['company_afm'],
-        "company_kad": company_info['company_kad'],
-        "report_title": f"Comprehensive Mentoring & Business Development Report - {company_info['company_name']}",
+        "company_name": company_info.get('company_name', ''),
+        "afm": company_info.get('afm', ''),
+        "kad": company_info.get('kad', ''),
+        "website": company_info.get('website', ''),
+        "report_title": f"Comprehensive Mentoring & Business Development Report - {company_info.get('company_name', 'Greek SME')}",
         "executive_summary": executive_summary,
         "sections": [s for s in sections if s is not None],
         "video_recommendations": video_recommendations,
@@ -321,16 +330,122 @@ def compile_final_report(sections: list[dict], company_info: dict, output_path: 
     return report
 
 
-def main():
-    if len(sys.argv) < 2:
-        console.print("[red]Error:[/red] Business directory path required")
-        console.print("Usage: uv run generate_mentoring_report_auto.py <directory_path>")
+def download_from_sharepoint(afm: str, logger: logging.Logger) -> Path:
+    """
+    Download files from SharePoint for given AFM.
+    Returns the directory containing downloaded files.
+    """
+    logger.info(f"Searching SharePoint for AFM: {afm}")
+
+    try:
+        # Initialize SharePoint client
+        client = GraphSharePointClient()
+        logger.info("Connected to SharePoint")
+
+        # Search for AFM folder
+        folders = client.search_folders(afm)
+
+        if not folders:
+            logger.error(f"No folders found in SharePoint for AFM: {afm}")
+            logger.info("Please check:")
+            logger.info("  1. AFM is correct")
+            logger.info("  2. SharePoint contains a folder with this AFM")
+            logger.info("  3. SharePoint credentials are configured in .env")
+            sys.exit(1)
+
+        logger.info(f"Found {len(folders)} folder(s) containing '{afm}'")
+
+        # Find mentoring subfolder
+        mentoring_folder = None
+        afm_folder_info = None
+
+        for folder_info in folders:
+            folder_items = client.get_folder_items(folder_info['id'])
+
+            # Look for 'mentoring' subfolder
+            for item in folder_items:
+                if item.get("type") == "folder" and item["name"].lower() == "mentoring":
+                    mentoring_folder = item
+                    afm_folder_info = folder_info
+                    break
+
+            if mentoring_folder:
+                break
+
+        if not mentoring_folder:
+            logger.error("No 'mentoring' subfolder found in AFM folder")
+            logger.info(f"Searched in: {', '.join([f['name'] for f in folders])}")
+            sys.exit(1)
+
+        logger.info(f"Found mentoring subfolder in '{afm_folder_info['name']}'")
+
+        # Create working directory
+        project_root = Path(__file__).parent.parent
+        working_dir = project_root / "working_dir"
+        working_dir.mkdir(exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = working_dir / f"{afm}_{timestamp}"
+        output_dir.mkdir(exist_ok=True)
+
+        logger.info(f"Working Directory: {output_dir}")
+
+        # Download files from mentoring subfolder directly into working_dir
+        logger.info("Downloading files from SharePoint...")
+        downloaded_files = client.download_folder_files(
+            mentoring_folder['id'],
+            output_dir,
+            recursive=True
+        )
+
+        logger.info(f"Downloaded {len(downloaded_files)} files")
+
+        return output_dir
+
+    except Exception as e:
+        logger.error(f"Failed to download from SharePoint: {e}")
         sys.exit(1)
 
-    directory = Path(sys.argv[1]).resolve()
-    if not directory.exists():
-        console.print(f"[red]Error:[/red] Directory not found: {directory}")
-        sys.exit(1)
+
+def main():
+    # Initialize logging
+    setup_logging(log_file="app.log")
+    logger = logging.getLogger(__name__)
+
+    # Parse command-line arguments
+    afm_mode = False
+    afm_number = None
+    directory_path = None
+
+    i = 1
+    while i < len(sys.argv):
+        arg = sys.argv[i]
+        if arg == "--afm" and i + 1 < len(sys.argv):
+            afm_mode = True
+            afm_number = sys.argv[i + 1]
+            i += 2
+        else:
+            # Direct directory path (backward compatible)
+            directory_path = arg
+            i += 1
+
+    # Interactive mode if no arguments
+    if not afm_mode and not directory_path:
+        choice = input("Enter [1] for AFM search or [2] for direct folder path: ").strip()
+        if choice == "1":
+            afm_number = input("Enter AFM number: ").strip()
+            if not afm_number:
+                logger.error("AFM number required")
+                sys.exit(1)
+            afm_mode = True
+        elif choice == "2":
+            directory_path = input("Enter directory path: ").strip()
+            if not directory_path:
+                logger.error("Directory path required")
+                sys.exit(1)
+        else:
+            logger.error("Invalid choice")
+            sys.exit(1)
 
     # Track start time
     start_time = datetime.now()
@@ -343,61 +458,84 @@ def main():
         border_style="cyan"
     ))
 
-    console.print(f"\n[bold]Generation started:[/bold] {start_time_str}")
-    console.print(f"[bold]Target Directory:[/bold] {directory}\n")
+    console.print(f"\n[bold]Generation started:[/bold] {start_time_str}\n")
+
+    # Determine working directory
+    if afm_mode:
+        # Download from SharePoint
+        directory = download_from_sharepoint(afm_number, logger)
+    else:
+        # Use provided directory path
+        directory = Path(directory_path).resolve()
+        if not directory.exists():
+            logger.error(f"Directory not found: {directory}")
+            sys.exit(1)
+        logger.info(f"Target Directory: {directory}")
 
     # Phase 1: Document Discovery
-    console.print("[bold green]Phase 1:[/bold green] Discovering business documents...")
+    logger.info("Phase 1: Discovering business documents...")
     files = discover_files(directory)
-    console.print(f"[OK] Found {len(files)} documents\n")
+    logger.info(f"Found {len(files)} documents")
 
     # Phase 2: File Classification (LLM-based)
-    console.print("[bold green]Phase 2:[/bold green] Classifying files by section relevance (intelligent content analysis)...")
+    logger.info("Phase 2: Classifying files by section relevance...")
     file_classification, classification_details = classify_files_by_section_llm(files, directory)
-    console.print("[green][OK] Files classified using content-based analysis[/green]")
+    logger.info("Files classified using content-based analysis")
 
-    # Phase 3: Extract Company Metadata (before creating output dir, to get AFM)
-    console.print("[bold green]Phase 3:[/bold green] Extracting company metadata...")
-    company_info = extract_company_metadata(directory, files)
-    console.print(f"[OK] Company: {company_info['company_name']}")
-    console.print(f"[OK] AFM: {company_info['company_afm']}")
-    console.print(f"[OK] KAD: {company_info['company_kad']}\n")
+    # Phase 3: Extract AFM for directory naming (full metadata from Section 1 later)
+    logger.info("Phase 3: Extracting AFM for directory naming...")
+    afm_for_directory = extract_afm(directory, afm_number if afm_mode else None)
+    logger.info(f"AFM: {afm_for_directory}")
 
-    # Create timestamped working directory
-    project_root = Path(__file__).parent.parent
-    working_dir = project_root / "working_dir"
-    working_dir.mkdir(exist_ok=True)
+    # Placeholder metadata - will be populated by Section 1
+    company_info = {
+        "company_name": "",
+        "afm": "",
+        "kad": "",
+        "website": ""
+    }
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    afm = company_info.get('company_afm', '000000000')
-    output_dir = working_dir / f"{afm}_{timestamp}"
-    output_dir.mkdir(exist_ok=True)
+    # Determine output directory
+    if afm_mode:
+        # SharePoint mode: directory IS already the working_dir
+        output_dir = directory
+        # Files are already in working_dir, update classification paths
+        file_classification_working = file_classification
+    else:
+        # Direct folder mode: Create working directory and copy files
+        project_root = Path(__file__).parent.parent
+        working_dir = project_root / "working_dir"
+        working_dir.mkdir(exist_ok=True)
 
-    console.print(f"[bold]Working Directory:[/bold] {output_dir}\n")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = working_dir / f"{afm_for_directory}_{timestamp}"
+        output_dir.mkdir(exist_ok=True)
 
-    # Copy all source files to working directory
-    console.print("[bold blue]Copying source files to working directory...[/bold blue]")
-    copied_files = []
-    for src_file in files:
-        # Preserve relative structure within mentoring/
-        rel_path = src_file.relative_to(directory)
-        dest_file = output_dir / rel_path
-        dest_file.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src_file, dest_file)
-        copied_files.append(dest_file)
+        logger.info(f"Working Directory: {output_dir}")
 
-    console.print(f"[green][OK] Copied {len(copied_files)} files to working directory[/green]\n")
+        # Copy all source files to working directory
+        logger.info("Copying source files to working directory...")
+        copied_files = []
+        for src_file in files:
+            # Preserve relative structure within mentoring/
+            rel_path = src_file.relative_to(directory)
+            dest_file = output_dir / rel_path
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src_file, dest_file)
+            copied_files.append(dest_file)
 
-    # Update file_classification to use working_dir paths instead of source paths
-    file_classification_working = {}
-    for section, src_paths in file_classification.items():
-        file_classification_working[section] = []
-        for src_path in src_paths:
-            rel_path = src_path.relative_to(directory)
-            working_path = output_dir / rel_path
-            file_classification_working[section].append(working_path)
+        logger.info(f"Copied {len(copied_files)} files to working directory")
 
-    file_classification = file_classification_working
+        # Update file_classification to use working_dir paths instead of source paths
+        file_classification_working = {}
+        for section, src_paths in file_classification.items():
+            file_classification_working[section] = []
+            for src_path in src_paths:
+                rel_path = src_path.relative_to(directory)
+                working_path = output_dir / rel_path
+                file_classification_working[section].append(working_path)
+
+        file_classification = file_classification_working
 
     # Save classification with relative paths and detailed reasoning
     classification_path = output_dir / "section_file_mapping.json"
@@ -428,27 +566,48 @@ def main():
         json.dump(company_info, f, ensure_ascii=False, indent=2)
 
     # Phase 4: Generate Sections
-    console.print("[bold green]Phase 4:[/bold green] Generating comprehensive sections (800-1200 words each)...")
-    console.print("[dim]This phase requires manual Task agent execution for each section[/dim]\n")
+    logger.info("Phase 4: Generating comprehensive sections (800-1200 words each)...")
 
     sections = []
-    for section_num in range(1, 12):
+
+    # Generate Section 1 FIRST to extract metadata
+    logger.info("Generating Section 1 first to extract company metadata...")
+    relevant_files = file_classification.get(1, [])
+    section_1 = generate_section_via_agent(1, company_info, relevant_files, output_dir, logger)
+
+    if section_1:
+        sections.append(section_1)
+
+        # Extract metadata from Section 1
+        if 'metadata' in section_1:
+            company_info = section_1['metadata']
+            logger.info(f"Extracted metadata - Company: {company_info.get('company_name', 'N/A')}")
+            logger.info(f"AFM: {company_info.get('afm', 'N/A')}, KAD: {company_info.get('kad', 'N/A')}")
+            if company_info.get('website'):
+                logger.info(f"Website: {company_info['website']}")
+        else:
+            logger.warning("Section 1 did not return metadata, using folder-based extraction")
+    else:
+        logger.error("Section 1 generation failed")
+
+    # Generate remaining sections (2-11)
+    for section_num in range(2, 12):
         relevant_files = file_classification.get(section_num, [])
 
         # No checking for existing sections - always generate fresh
-        section = generate_section_via_agent(section_num, company_info, relevant_files, output_dir)
+        section = generate_section_via_agent(section_num, company_info, relevant_files, output_dir, logger)
         if section:
             sections.append(section)
         else:
-            console.print(f"[yellow][WARNING] Section {section_num} skipped[/yellow]\n")
+            logger.warning(f"Section {section_num} skipped")
 
     # Phase 5: Compile Report
-    console.print("[bold green]Phase 5:[/bold green] Compiling final report...")
+    logger.info("Phase 5: Compiling final report...")
     final_report_path = output_dir / "mentoring_report_complete.json"
     report = compile_final_report(sections, company_info, final_report_path)
 
     # Phase 6: Render HTML
-    console.print("[bold green]Phase 6:[/bold green] Rendering HTML report...")
+    logger.info("Phase 6: Rendering HTML report...")
 
     try:
         project_root = Path(__file__).parent.parent
@@ -459,12 +618,12 @@ def main():
         html_output_path = output_dir / "mentoring_report.html"
 
         render_report(final_report_path, html_output_path, template_path, logo_path)
-        console.print(f"[green][OK] HTML report rendered successfully[/green]\n")
+        logger.info("HTML report rendered successfully")
 
         html_success = True
 
     except Exception as e:
-        console.print(f"[red][ERROR] HTML rendering failed:[/red] {e}\n")
+        logger.error(f"HTML rendering failed: {e}")
         html_success = False
         html_output_path = None
 

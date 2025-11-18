@@ -16,8 +16,9 @@ from openpyxl import load_workbook
 from openpyxl.comments import Comment
 from PIL import Image
 
-# Silence pandas warnings
-warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
+# Silence all warnings from pandas, openpyxl, and pillow
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
 pd.options.mode.chained_assignment = None
 
 

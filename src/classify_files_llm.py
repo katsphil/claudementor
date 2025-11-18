@@ -91,15 +91,22 @@ def classify_files_with_llm(files: list[Path], preprocessed_data_map: dict = Non
 **Files to Classify:**
 {json.dumps(file_summaries, indent=2, ensure_ascii=False)}
 
-**Classification Rules:**
-1. Analyze filename, file type, and any available content samples or hints
-2. Match each file to ALL relevant sections - files can (and often should) map to 3-7 sections
-3. **Business plans MUST go to sections: 1, 3, 4, 5, 7, 8, 10** (covers all strategic areas)
-4. Financial documents (Excel with financial data, E1, E3, ENFIA, Teiresias) → sections 2, 6, 11
-5. Psychometric assessments/personality tests/leadership evaluations → Section 9
-6. Tax/legal/insurance documents → Sections 2 and 11
-7. OPSKE/funding proposals → Sections 4, 5, 8 (funding, digital transformation, innovation)
-8. Be INCLUSIVE - assign to all potentially relevant sections, don't be too restrictive
+**CRITICAL: Analyze the ACTUAL files available and ensure NO section is left empty.**
+
+**Classification Strategy:**
+1. **First**, review what files are actually available in this dataset
+2. **Then**, intelligently distribute files to ensure EVERY section gets relevant content
+3. **Use these guidelines** (but adapt based on what files exist):
+   - Business plans → typically sections 1, 3, 4, 5, 7, 8, 10
+   - Financial documents (Excel, E1, E3, ENFIA, Teiresias) → sections 2, 6, 11
+   - Psychometric assessments/leadership tests → Section 9
+   - Tax/legal/insurance documents → Sections 2, 11
+   - OPSKE/funding proposals → Sections 4, 5, 8
+4. **If a section would have zero files**, assign the most relevant available file(s) to it
+   - Example: If no ESG file exists, assign business plan to Section 7
+   - Example: If no tech docs exist, assign business plan to Section 8
+5. **Be INCLUSIVE** - files can map to 3-7 sections if they contain relevant information
+6. **Prioritize content coverage** - better to over-assign than leave sections empty
 
 **Output Format**: Return ONLY valid JSON (no markdown, no explanation):
 {{
