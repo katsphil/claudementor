@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/__init__.py
+src/classify_files_llm.py
+src/generate_mentoring_report_auto.py
+src/logging_config.py
+src/preprocess_documents.py
+src/render_report.py
+src/section_prompts.py
+src/sharepoint_graph_client.py
+src/video_processing.py
+src/mentoring_report_generator.egg-info/PKG-INFO
+src/mentoring_report_generator.egg-info/SOURCES.txt
+src/mentoring_report_generator.egg-info/dependency_links.txt
+src/mentoring_report_generator.egg-info/entry_points.txt
+src/mentoring_report_generator.egg-info/requires.txt
+src/mentoring_report_generator.egg-info/top_level.txt

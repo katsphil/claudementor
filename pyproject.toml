@@ -23,4 +23,7 @@ dependencies = [
 mentoring-report = "src.generate_mentoring_report_auto:main"
 
 [tool.uv]
-dev-dependencies = []
+package = true
+
+[dependency-groups]
+dev = []

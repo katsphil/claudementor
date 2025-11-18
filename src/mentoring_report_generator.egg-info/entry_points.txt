@@ -1,0 +1,2 @@
+[console_scripts]
+mentoring-report = src.generate_mentoring_report_auto:main
