@@ -5,6 +5,7 @@ Extracts maximum data while preserving context and narrative.
 """
 
 import json
+import logging
 import re
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,8 @@ from PIL import Image
 warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 pd.options.mode.chained_assignment = None
+
+logger = logging.getLogger(__name__)
 
 
 def extract_excel_data(file_path: Path) -> dict[str, Any]:
@@ -383,7 +386,7 @@ def preprocess_directory(directory: Path, output_path: Path = None) -> dict[str,
     }
 
     for file_path in files:
-        print(f"Processing: {file_path.name}")
+        logger.info(f"Processing: {file_path.name}")
         file_data = preprocess_document(file_path)
         results["files"].append(file_data)
 

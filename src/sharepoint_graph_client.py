@@ -377,6 +377,96 @@ class GraphSharePointClient:
             self.logger.error(f"Error downloading files from folder '{folder_id}': {e}")
             raise
 
+    def create_folder(self, parent_folder_id: str, folder_name: str) -> Dict[str, Any]:
+        """
+        Create a folder in SharePoint.
+
+        Args:
+            parent_folder_id: ID of parent folder
+            folder_name: Name of folder to create
+
+        Returns:
+            Dictionary with folder information (id, name, web_url)
+        """
+        try:
+            self.logger.info(f"Creating folder '{folder_name}' in parent {parent_folder_id}")
+
+            url = f"https://graph.microsoft.com/v1.0/drives/{self.drive_id}/items/{parent_folder_id}/children"
+
+            data = {
+                "name": folder_name,
+                "folder": {},
+                "@microsoft.graph.conflictBehavior": "rename"
+            }
+
+            response = requests.post(url, headers=self.headers, json=data)
+
+            if response.status_code not in [200, 201]:
+                self.logger.error(f"Failed to create folder: {response.status_code} - {response.text}")
+                raise Exception(f"Failed to create folder '{folder_name}': {response.text}")
+
+            folder_info = response.json()
+            self.logger.info(f"Created folder: {folder_info['name']} (ID: {folder_info['id']})")
+
+            return {
+                "id": folder_info["id"],
+                "name": folder_info["name"],
+                "web_url": folder_info.get("webUrl", "")
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error creating folder '{folder_name}': {e}")
+            raise
+
+    def upload_file(self, local_file_path: Path, folder_id: str) -> Dict[str, Any]:
+        """
+        Upload a file to SharePoint folder.
+
+        Args:
+            local_file_path: Path to local file to upload
+            folder_id: SharePoint folder ID to upload to
+
+        Returns:
+            Dictionary with upload information
+        """
+        try:
+            file_name = local_file_path.name
+            file_size = local_file_path.stat().st_size
+
+            self.logger.info(f"Uploading file: {file_name} ({file_size} bytes)")
+
+            # For files < 4MB, use simple upload
+            # For larger files, should use resumable upload session (not implemented here)
+            if file_size > 4 * 1024 * 1024:
+                self.logger.warning(f"File {file_name} is large ({file_size} bytes), upload may be slow")
+
+            url = f"https://graph.microsoft.com/v1.0/drives/{self.drive_id}/items/{folder_id}:/{file_name}:/content"
+
+            with open(local_file_path, 'rb') as file_content:
+                response = requests.put(
+                    url,
+                    headers={**self.headers, "Content-Type": "application/octet-stream"},
+                    data=file_content
+                )
+
+            if response.status_code not in [200, 201]:
+                self.logger.error(f"Failed to upload file: {response.status_code} - {response.text}")
+                raise Exception(f"Failed to upload file '{file_name}': {response.text}")
+
+            file_info = response.json()
+            self.logger.info(f"Successfully uploaded: {file_name}")
+
+            return {
+                "name": file_info["name"],
+                "id": file_info["id"],
+                "web_url": file_info.get("webUrl", ""),
+                "size": file_info.get("size", 0)
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error uploading file '{local_file_path.name}': {e}")
+            raise
+
 
 def download_sharepoint_files(
     search_string: str,

@@ -31,10 +31,12 @@ def get_section_prompt(section_num, company_info, relevant_files):
         11: get_section_11_prompt
     }
 
-    return prompts[section_num](company_info, relevant_files)
+    return prompts[section_num](section_num, company_info, relevant_files)
 
-def get_section_1_prompt(company_info, relevant_files):
+def get_section_1_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 1: Business Profile & Strategic Positioning** for a Greek SME mentoring report.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Relevant Files**: {', '.join([f.name for f in relevant_files]) if relevant_files else 'General business context'}
 
@@ -85,8 +87,10 @@ def get_section_1_prompt(company_info, relevant_files):
 
 Read any available documents and generate comprehensive analysis now."""
 
-def get_section_2_prompt(company_info, relevant_files):
+def get_section_2_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 2: Financial Health & Performance Optimization** for Greek SME mentoring report.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')} (AFM: {company_info.get('afm', 'N/A')})
 
@@ -114,8 +118,10 @@ def get_section_2_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON with the schema above."""
 
-def get_section_3_prompt(company_info, relevant_files):
+def get_section_3_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 3: Market Analysis & Competitive Strategy** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')} (AFM: {company_info.get('afm', 'N/A')})
 
@@ -143,8 +149,10 @@ def get_section_3_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON."""
 
-def get_section_4_prompt(company_info, relevant_files):
+def get_section_4_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 4: Funding Strategy & Investment Planning** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')}
 **Relevant Files**: {', '.join([f.name for f in relevant_files]) if relevant_files else 'Funding proposals if available'}
@@ -172,8 +180,10 @@ def get_section_4_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON."""
 
-def get_section_5_prompt(company_info, relevant_files):
+def get_section_5_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 5: Digital Transformation Roadmap** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')}
 
@@ -202,8 +212,10 @@ def get_section_5_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON."""
 
-def get_section_6_prompt(company_info, relevant_files):
+def get_section_6_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 6: Financial Management Systems** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')}
 **Relevant Files**: {', '.join([f.name for f in relevant_files]) if relevant_files else 'Financial system data'}
@@ -232,8 +244,10 @@ def get_section_6_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON."""
 
-def get_section_7_prompt(company_info, relevant_files):
+def get_section_7_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 7: ESG Implementation Framework** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')}
 
@@ -262,8 +276,10 @@ def get_section_7_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON."""
 
-def get_section_8_prompt(company_info, relevant_files):
+def get_section_8_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 8: AI & Innovation Strategy** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')} (Industry: {company_info.get('kad', 'N/A')})
 
@@ -293,8 +309,10 @@ def get_section_8_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON with all 5 video_recommendations."""
 
-def get_section_9_prompt(company_info, relevant_files):
+def get_section_9_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 9: Leadership Development & Team Building** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')}
 **Relevant Files**: {', '.join([f.name for f in relevant_files]) if relevant_files else 'Leadership assessment data'}
@@ -321,8 +339,10 @@ def get_section_9_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON."""
 
-def get_section_10_prompt(company_info, relevant_files):
+def get_section_10_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 10: Implementation Roadmap & Success Metrics** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')}
 
@@ -353,8 +373,10 @@ def get_section_10_prompt(company_info, relevant_files):
 
 Return ONLY valid JSON."""
 
-def get_section_11_prompt(company_info, relevant_files):
+def get_section_11_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 11: Legal & Regulatory Compliance Framework** for Greek SME.
+
+**CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')} (AFM: {company_info.get('afm', 'N/A')}, KAD: {company_info.get('kad', 'N/A')})
 **Relevant Files**: {', '.join([f.name for f in relevant_files]) if relevant_files else 'Tax and legal documents'}

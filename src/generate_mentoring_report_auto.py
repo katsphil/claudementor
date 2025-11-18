@@ -342,10 +342,10 @@ def compile_final_report(sections: list[dict], company_info: dict, output_path: 
     return report
 
 
-def download_from_sharepoint(afm: str, logger: logging.Logger) -> Path:
+def download_from_sharepoint(afm: str, logger: logging.Logger) -> tuple[Path, str]:
     """
     Download files from SharePoint for given AFM.
-    Returns the directory containing downloaded files.
+    Returns tuple of (directory containing downloaded files, AFM parent folder ID).
     """
     logger.info(f"Searching SharePoint for AFM: {afm}")
 
@@ -412,7 +412,7 @@ def download_from_sharepoint(afm: str, logger: logging.Logger) -> Path:
 
         logger.info(f"Downloaded {len(downloaded_files)} files")
 
-        return output_dir
+        return output_dir, afm_folder_info['id']
 
     except Exception as e:
         logger.error(f"Failed to download from SharePoint: {e}")
@@ -473,9 +473,10 @@ def main():
     console.print(f"\n[bold]Generation started:[/bold] {start_time_str}\n")
 
     # Determine working directory
+    afm_parent_folder_id = None
     if afm_mode:
         # Download from SharePoint
-        directory = download_from_sharepoint(afm_number, logger)
+        directory, afm_parent_folder_id = download_from_sharepoint(afm_number, logger)
     else:
         # Use provided directory path
         directory = Path(directory_path).resolve()
@@ -658,6 +659,38 @@ def main():
         logger.error(f"HTML rendering failed: {e}")
         html_success = False
         html_output_path = None
+
+    # Phase 7: Upload to SharePoint (if in AFM mode)
+    if afm_mode and afm_parent_folder_id and html_success:
+        try:
+            logger.info("Phase 7: Uploading report to SharePoint...")
+
+            # Initialize SharePoint client
+            client = GraphSharePointClient()
+
+            # Create "mentoring_report" folder in AFM parent folder
+            logger.info("Creating 'mentoring_report' folder...")
+            report_folder = client.create_folder(afm_parent_folder_id, "mentoring_report")
+            report_folder_id = report_folder['id']
+            logger.info(f"Report folder ready: {report_folder['name']}")
+
+            # Upload HTML file
+            logger.info("Uploading HTML report...")
+            html_upload = client.upload_file(html_output_path, report_folder_id)
+            logger.info(f"Uploaded: {html_upload['name']} ({html_upload['size']} bytes)")
+
+            # Upload JSON file
+            logger.info("Uploading JSON report...")
+            json_upload = client.upload_file(final_report_path, report_folder_id)
+            logger.info(f"Uploaded: {json_upload['name']} ({json_upload['size']} bytes)")
+
+            logger.info("SharePoint upload completed successfully")
+            console.print("[bold green]Reports uploaded to SharePoint[/bold green]")
+
+        except Exception as e:
+            logger.warning(f"Failed to upload to SharePoint: {e}")
+            logger.warning("Report generation succeeded but upload failed")
+            console.print("[bold yellow]Warning: Upload to SharePoint failed - see logs[/bold yellow]")
 
     # Calculate elapsed time
     end_time = datetime.now()

@@ -42,11 +42,15 @@ def chunk_video(input_file: str, chunk_duration: int, output_dir: str) -> list[s
     duration = get_video_duration(input_file)
 
     logger.info(f"Video duration: {duration:.2f} seconds ({duration / 60:.2f} minutes)")
-    logger.info(f"Splitting into {chunk_duration}-second chunks...")
 
     chunk_count = int(duration / chunk_duration) + (
         1 if duration % chunk_duration > 0 else 0
     )
+
+    if chunk_count == 1:
+        logger.info(f"Extracting audio track - fits in single chunk (under {chunk_duration}s limit)")
+    else:
+        logger.info(f"Extracting audio track - splitting into {chunk_count} chunks of ~{chunk_duration}s each")
 
     for i in range(chunk_count):
         start_time = i * chunk_duration
@@ -104,15 +108,15 @@ def transcribe_video(filepath: str, api_key: str) -> str:
     if extension not in VIDEO_EXTENSIONS:
         raise ValueError(f"Unsupported video/audio format: {extension}")
 
-    logger.info(f"Transcribing video: {filename} ({file_size_mb:.1f}MB)")
+    logger.info(f"Processing video: {filename} ({file_size_mb:.1f}MB)")
 
     try:
         client = OpenAI(api_key=api_key)
 
         if file_size > max_size:
-            # Large file - use chunking
+            # Large file - use chunking (extract audio in chunks)
             logger.info(
-                f"File too large ({file_size_mb:.1f}MB), using chunking approach"
+                f"Video file size: {file_size_mb:.1f}MB - will extract audio in chunks for transcription"
             )
 
             # Create temporary directory for chunks
@@ -158,7 +162,8 @@ def transcribe_video(filepath: str, api_key: str) -> str:
                     logger.info(f"Cleaned up temporary directory: {temp_dir}")
 
         else:
-            # Small file - direct transcription
+            # Small file - direct transcription (file already under 25MB limit)
+            logger.info(f"File size under 25MB limit - transcribing directly")
             with open(filepath, "rb") as audio_file:
                 transcript = client.audio.transcriptions.create(
                     model="whisper-1", file=audio_file, response_format="text"
