@@ -112,8 +112,7 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
     Returns the generated section dict.
     """
     start_time = datetime.now().strftime("%H:%M:%S")
-    console.print(f"\n[bold cyan]Generating Section {section_num}... [dim]({start_time})[/dim][/bold cyan]")
-    console.print(f"Relevant files: {len(relevant_files)}")
+    console.print(f"\nSection {section_num} - Started: {start_time}")
 
     # Get the prompt for this section
     prompt = get_section_prompt(section_num, company_info, relevant_files)
@@ -122,8 +121,6 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
     prompt_file = output_dir / f"section_{section_num}_prompt.txt"
     with open(prompt_file, 'w', encoding='utf-8') as f:
         f.write(prompt)
-
-    console.print(f"[yellow]Calling Claude Code CLI to generate section (2-5 minutes)...[/yellow]")
 
     try:
         # Call Claude Code CLI with the prompt
@@ -153,14 +150,14 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
             try:
                 with open(section_file, 'r', encoding='utf-8') as f:
                     section_data = json.load(f)
-                console.print(f"[green]✓ Section {section_num} generated successfully[/green]")
-                console.print(f"[dim]Saved to: {section_file}[/dim]")
+                console.print(f"[green][OK] Section {section_num} generated successfully[/green]")
                 return section_data
             except Exception as e:
-                console.print(f"[yellow]Warning: File exists but couldn't load it: {e}[/yellow]")
-                # Fall through to stdout parsing
+                console.print(f"[red][ERROR] Section {section_num} - File exists but couldn't parse: {e}[/red]")
+                return None
 
         # Parse JSON from Claude's output (fallback if file doesn't exist)
+
         output_text = result.stdout
 
         # Try to extract JSON (Claude might wrap it in markdown)
@@ -173,24 +170,31 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
             if json_match:
                 json_str = json_match.group(0)
             else:
-                console.print(f"[red]Could not extract JSON from output[/red]")
+                console.print(f"[red][ERROR] Section {section_num} - Could not extract JSON from output[/red]")
                 # Save output for debugging
                 debug_file = output_dir / f"section_{section_num}_output_debug.txt"
                 with open(debug_file, 'w', encoding='utf-8') as f:
                     f.write(output_text)
-                console.print(f"[dim]Raw output saved to: {debug_file}[/dim]")
+                console.print(f"[dim]Debug output saved to: {debug_file}[/dim]")
                 return None
 
         # Parse the JSON
-        section_data = json.loads(json_str)
+        try:
+            section_data = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            console.print(f"[red][ERROR] Section {section_num} - JSON parse error: {e}[/red]")
+            debug_file = output_dir / f"section_{section_num}_output_debug.txt"
+            with open(debug_file, 'w', encoding='utf-8') as f:
+                f.write(json_str)
+            console.print(f"[dim]Debug output saved to: {debug_file}[/dim]")
+            return None
 
         # Save the generated section
         section_file = output_dir / f"section_{section_num}_generated.json"
         with open(section_file, 'w', encoding='utf-8') as f:
             json.dump(section_data, f, ensure_ascii=False, indent=2)
 
-        console.print(f"[green]✓ Section {section_num} generated successfully[/green]")
-        console.print(f"[dim]Saved to: {section_file}[/dim]")
+        console.print(f"[green][OK] Section {section_num} generated successfully[/green]")
 
         return section_data
 
@@ -328,6 +332,10 @@ def main():
         console.print(f"[red]Error:[/red] Directory not found: {directory}")
         sys.exit(1)
 
+    # Track start time
+    start_time = datetime.now()
+    start_time_str = start_time.strftime("%Y-%m-%d %H:%M:%S")
+
     # Display header
     console.print(Panel.fit(
         "[bold cyan]Automated Mentoring Report Generator[/bold cyan]\n"
@@ -335,24 +343,25 @@ def main():
         border_style="cyan"
     ))
 
-    console.print(f"\n[bold]Target Directory:[/bold] {directory}\n")
+    console.print(f"\n[bold]Generation started:[/bold] {start_time_str}")
+    console.print(f"[bold]Target Directory:[/bold] {directory}\n")
 
     # Phase 1: Document Discovery
     console.print("[bold green]Phase 1:[/bold green] Discovering business documents...")
     files = discover_files(directory)
-    console.print(f"✓ Found {len(files)} documents\n")
+    console.print(f"[OK] Found {len(files)} documents\n")
 
     # Phase 2: File Classification (LLM-based)
     console.print("[bold green]Phase 2:[/bold green] Classifying files by section relevance (intelligent content analysis)...")
     file_classification, classification_details = classify_files_by_section_llm(files, directory)
-    console.print("[green]✓ Files classified using content-based analysis[/green]")
+    console.print("[green][OK] Files classified using content-based analysis[/green]")
 
     # Phase 3: Extract Company Metadata (before creating output dir, to get AFM)
     console.print("[bold green]Phase 3:[/bold green] Extracting company metadata...")
     company_info = extract_company_metadata(directory, files)
-    console.print(f"✓ Company: {company_info['company_name']}")
-    console.print(f"✓ AFM: {company_info['company_afm']}")
-    console.print(f"✓ KAD: {company_info['company_kad']}\n")
+    console.print(f"[OK] Company: {company_info['company_name']}")
+    console.print(f"[OK] AFM: {company_info['company_afm']}")
+    console.print(f"[OK] KAD: {company_info['company_kad']}\n")
 
     # Create timestamped working directory
     project_root = Path(__file__).parent.parent
@@ -377,7 +386,7 @@ def main():
         shutil.copy2(src_file, dest_file)
         copied_files.append(dest_file)
 
-    console.print(f"[green]✓ Copied {len(copied_files)} files to working directory[/green]\n")
+    console.print(f"[green][OK] Copied {len(copied_files)} files to working directory[/green]\n")
 
     # Update file_classification to use working_dir paths instead of source paths
     file_classification_working = {}
@@ -403,8 +412,6 @@ def main():
     with open(detailed_classification_path, 'w', encoding='utf-8') as f:
         json.dump(classification_details, f, ensure_ascii=False, indent=2)
 
-    console.print(f"✓ File classification saved to: {classification_path}")
-    console.print(f"✓ Detailed classification reasoning: {detailed_classification_path}\n")
 
     # Display classification table
     table = Table(title="File Classification by Section")
@@ -432,15 +439,13 @@ def main():
         section = generate_section_via_agent(section_num, company_info, relevant_files, output_dir)
         if section:
             sections.append(section)
-            console.print(f"[green]✓ Section {section_num} generated successfully[/green]\n")
         else:
-            console.print(f"[yellow]⚠ Section {section_num} skipped[/yellow]\n")
+            console.print(f"[yellow][WARNING] Section {section_num} skipped[/yellow]\n")
 
     # Phase 5: Compile Report
     console.print("[bold green]Phase 5:[/bold green] Compiling final report...")
     final_report_path = output_dir / "mentoring_report_complete.json"
     report = compile_final_report(sections, company_info, final_report_path)
-    console.print(f"✓ Final report saved to: {final_report_path}\n")
 
     # Phase 6: Render HTML
     console.print("[bold green]Phase 6:[/bold green] Rendering HTML report...")
@@ -454,22 +459,29 @@ def main():
         html_output_path = output_dir / "mentoring_report.html"
 
         render_report(final_report_path, html_output_path, template_path, logo_path)
-        console.print(f"[green]✓ HTML report rendered successfully[/green]")
-        console.print(f"[dim]Saved to: {html_output_path}[/dim]\n")
+        console.print(f"[green][OK] HTML report rendered successfully[/green]\n")
 
         html_success = True
 
     except Exception as e:
-        console.print(f"[red]✗ HTML rendering failed:[/red] {e}\n")
+        console.print(f"[red][ERROR] HTML rendering failed:[/red] {e}\n")
         html_success = False
         html_output_path = None
+
+    # Calculate elapsed time
+    end_time = datetime.now()
+    elapsed = end_time - start_time
+    elapsed_minutes = int(elapsed.total_seconds() // 60)
+    elapsed_seconds = int(elapsed.total_seconds() % 60)
+    elapsed_str = f"{elapsed_minutes}m {elapsed_seconds}s" if elapsed_minutes > 0 else f"{elapsed_seconds}s"
 
     # Summary
     if html_success:
         console.print(Panel.fit(
-            f"[bold green]✓ Report Generation Complete![/bold green]\n\n"
+            f"[bold green]Report Generation Complete[/bold green]\n\n"
             f"Company: {company_info['company_name']}\n"
             f"Sections: {len(sections)}/11\n"
+            f"Duration: {elapsed_str}\n"
             f"Output Directory: {output_dir}\n"
             f"JSON: mentoring_report_complete.json\n"
             f"HTML: mentoring_report.html",
@@ -478,9 +490,10 @@ def main():
         ))
     else:
         console.print(Panel.fit(
-            f"[bold yellow]⚠ Report Generation Partial[/bold yellow]\n\n"
+            f"[bold yellow]Report Generation Partial[/bold yellow]\n\n"
             f"Company: {company_info['company_name']}\n"
             f"Sections: {len(sections)}/11\n"
+            f"Duration: {elapsed_str}\n"
             f"Output Directory: {output_dir}\n"
             f"JSON: mentoring_report_complete.json\n"
             f"HTML: Failed - check errors above",

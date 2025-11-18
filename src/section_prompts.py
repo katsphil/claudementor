@@ -44,6 +44,8 @@ def get_section_1_prompt(company_info, relevant_files):
 
 **Your Task**: Generate a comprehensive 800-1200 word section with:
 
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "SEO", "CRM", "ROI").
+
 1. **Content (HTML formatted)** covering:
    - Detailed business model analysis
    - Market positioning suggestions
@@ -84,6 +86,8 @@ def get_section_2_prompt(company_info, relevant_files):
 
 **Your Task**: Generate comprehensive 800-1200 word financial analysis with:
 
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "SEO", "CRM", "ROI").
+
 1. **Content (HTML formatted)**:
    - Revenue analysis and cash flow assessment
    - **Teiresias Credit Score**: Search Excel files (especially "sorefsis") for credit scores in tables with headers like "Βαθμολογία", "Score", "Rating". Common formats: "450/600", "Grade A-E". Explain in Greek SME context (e.g., "450/600 = top 25% of Greek SMEs"). Provide improvement strategies.
@@ -108,6 +112,8 @@ def get_section_3_prompt(company_info, relevant_files):
 **Company**: {company_info['company_name']} (AFM: {company_info['company_afm']})
 
 **Your Task**: Generate 800-1200 word market analysis with:
+
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "SEO", "CRM", "ROI").
 
 1. **Content (HTML)**:
    - Greek market size and trends for this industry (KAD: {company_info['company_kad']})
@@ -137,6 +143,8 @@ def get_section_4_prompt(company_info, relevant_files):
 
 **Your Task**: Generate 800-1200 words on:
 
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "ΕΣΠΑ", "ROI", "crowdfunding").
+
 1. **Content (HTML)**:
    - ΕΣΠΑ 2021-2027 program analysis (5+ relevant programs)
    - Traditional bank financing options
@@ -162,6 +170,8 @@ def get_section_5_prompt(company_info, relevant_files):
 **Company**: {company_info['company_name']}
 
 **Your Task**: Generate 800-1200 words on digital transformation:
+
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "SEO", "CRM", "UX", "WordPress").
 
 1. **Content (HTML)**:
    - **Website Discovery**: Systematically search business plan, proposals, and contact documents for website URLs. Check: company info sections, contact details, marketing sections, headers/footers, email signatures. Look for patterns: www., http://, .gr, .com domains.
@@ -192,6 +202,8 @@ def get_section_6_prompt(company_info, relevant_files):
 
 **Your Task**: Generate 800-1200 words on financial systems:
 
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "ERP", "myDATA", "dashboard").
+
 1. **Content (HTML)**:
    - Current systems assessment
    - Greek accounting software comparison (SingularLogic, SoftOne, Epsilon Net)
@@ -218,6 +230,8 @@ def get_section_7_prompt(company_info, relevant_files):
 **Company**: {company_info['company_name']}
 
 **Your Task**: Generate 800-1200 words on ESG:
+
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "ESG", "ISO", "B-Corp", "ROI").
 
 1. **Content (HTML)**:
    - ESG scorecard (Environmental, Social, Governance - base 100)
@@ -246,6 +260,8 @@ def get_section_8_prompt(company_info, relevant_files):
 **Company**: {company_info['company_name']} (Industry: {company_info['company_kad']})
 
 **Your Task**: Generate 800-1200 words on AI/innovation:
+
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "AI", "machine learning", "automation", "ChatGPT").
 
 1. **Content (HTML)**:
    - AI readiness assessment (detailed, current state)
@@ -277,6 +293,8 @@ def get_section_9_prompt(company_info, relevant_files):
 
 **Your Task**: Generate 800-1200 words on leadership:
 
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "DISC", "Myers-Briggs", "Big Five", "360 review").
+
 1. **Content (HTML)**:
    - **Psychometric Profile**: Use Read tool to examine ALL images and PDFs. Look for personality tests, leadership assessments, evaluation reports with scores (base 100). Common tests: DISC, Myers-Briggs, Big Five, 360 reviews. Extract ALL numerical scores and interpret them.
    - Leadership style assessment based on findings
@@ -303,6 +321,8 @@ def get_section_10_prompt(company_info, relevant_files):
 **Context**: Synthesize action items from previous sections 1-9 into coherent implementation plan.
 
 **Your Task**: Generate 800-1200 words implementation roadmap:
+
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "KPI", "ROI", "Gantt").
 
 1. **Content (HTML)**:
    - Comprehensive 30-60-90 day action plans
@@ -332,6 +352,8 @@ def get_section_11_prompt(company_info, relevant_files):
 **Relevant Files**: {', '.join([f.name for f in relevant_files]) if relevant_files else 'Tax and legal documents'}
 
 **Your Task**: Generate 800-1200 words on compliance:
+
+**IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "GDPR", "ISO").
 
 1. **Content (HTML)**:
    - Legal structure analysis (ΑΕ, ΕΠΕ, ΙΚΕ, ατομική επιχείρηση)
