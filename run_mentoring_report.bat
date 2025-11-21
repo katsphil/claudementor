@@ -76,14 +76,15 @@ if %ERRORLEVEL% NEQ 0 (
         exit /b 1
     )
     goto ffmpeg_done
-
-    :ffmpeg_success
-    echo FFmpeg installed! PATH will be refreshed automatically...
-
-    :ffmpeg_done
-) else (
-    echo [OK] FFmpeg found
 )
+
+:ffmpeg_success
+echo FFmpeg installed! PATH will be refreshed automatically...
+
+:ffmpeg_found
+echo [OK] FFmpeg found
+
+:ffmpeg_done
 echo.
 
 :: Check for Claude Code CLI
@@ -152,15 +153,23 @@ if not exist ".env" (
 )
 echo.
 
-:: Install Python dependencies
-echo Installing dependencies...
+:: Install Python dependencies and package
+echo Installing dependencies and package...
 uv sync
 if %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Failed to install dependencies
     pause
     exit /b 1
 )
-echo [OK] Dependencies installed
+
+echo Installing package in editable mode...
+uv pip install -e .
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Failed to install package
+    pause
+    exit /b 1
+)
+echo [OK] Dependencies and package installed
 echo.
 
 :: Launch application
@@ -169,7 +178,7 @@ echo Launching application...
 echo ========================================
 echo.
 
-uv run src/generate_mentoring_report_auto.py
+uv run mentoring-report
 
 if %ERRORLEVEL% NEQ 0 (
     echo.

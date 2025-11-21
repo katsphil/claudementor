@@ -115,6 +115,7 @@ def get_section_2_prompt(section_num, company_info, relevant_files):
    - Cost breakdown analysis
 
 4. **Action Items** (4-6 items): Credit score improvement, financial management, accounting software, credit line
+   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
 Return ONLY valid JSON with the schema above."""
 
@@ -146,16 +147,21 @@ def get_section_3_prompt(section_num, company_info, relevant_files):
    - Target segments with demographics and strategy
 
 4. **Action Items** (5-6): Competitive intelligence, pricing analysis, partnership development
+   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
 Return ONLY valid JSON."""
 
 def get_section_4_prompt(section_num, company_info, relevant_files):
+    from datetime import datetime
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
     return f"""Generate **Section 4: Funding Strategy & Investment Planning** for Greek SME.
 
 **CRITICAL**: Save your response as section_{section_num}_generated.json in the current working directory.
 
 **Company**: {company_info.get('company_name', 'Greek SME')}
 **Relevant Files**: {', '.join([f.name for f in relevant_files]) if relevant_files else 'Funding proposals if available'}
+**Today's Date**: {current_date}
 
 **Your Task**: Generate 800-1200 words on:
 
@@ -163,6 +169,9 @@ def get_section_4_prompt(section_num, company_info, relevant_files):
 
 1. **Content (HTML)**:
    - ΕΣΠΑ 2021-2027 program analysis (5+ relevant programs)
+     Use WebSearch to verify current program availability on espa.gr
+     Only include programs with open calls or upcoming deadlines after {current_date}
+     Include verified submission deadlines from live sources
    - Traditional bank financing options
    - Alternative financing (crowdfunding, angel investors, leasing)
    - ROI calculations for proposed investments
@@ -173,7 +182,7 @@ def get_section_4_prompt(section_num, company_info, relevant_files):
 2. **KPIs** (4-5): Available ΕΣΠΑ programs, loan capacity, ROI projections
 
 3. **Tables** (2):
-   - ΕΣΠΑ programs comparison (eligibility, amounts, timelines)
+   - ΕΣΠΑ programs comparison (eligibility, amounts, verified timelines)
    - Investment options with ROI analysis
 
 4. **Action Items** (4-5): ΕΣΠΑ application, bank negotiations, investment plan
@@ -209,6 +218,7 @@ def get_section_5_prompt(section_num, company_info, relevant_files):
    - Tool recommendations comparison
 
 4. **Action Items** (5-6): Website development/improvement, social media, CRM, SEO
+   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
 Return ONLY valid JSON."""
 
@@ -302,10 +312,15 @@ def get_section_8_prompt(section_num, company_info, relevant_files):
 3. **Tables** (1): AI tools comparison for this industry
 
 4. **Action Items** (4-5): AI pilot project, training, tool implementation
+   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
-5. **VIDEO RECOMMENDATIONS** (EXACTLY 5): Include 5 YouTube videos with:
-   - title, channel, url, duration, topic, relevance to this specific business
+5. **VIDEO RECOMMENDATIONS** (EXACTLY 5):
+   - MANDATORY: Use the WebSearch tool to search YouTube for real, existing videos
+   - Search queries should be specific to AI/business applications for SMEs
+   - Verify each video exists before including it in your response
+   - Include 5 YouTube videos with: title, channel, url, duration, topic, relevance to this specific business
    - Focus on practical AI/business applications for Greek SMEs
+   - Only include videos you have confirmed exist through WebSearch
 
 Return ONLY valid JSON with all 5 video_recommendations."""
 

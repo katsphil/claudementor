@@ -8,17 +8,20 @@ Generates comprehensive 11-section mentoring reports for Greek SMEs by:
 3. Compiling into final JSON and rendering HTML
 
 Usage:
-    # AFM-based (searches SharePoint)
-    uv run generate_mentoring_report_auto.py --afm 071477247
+    # Using the installed command (recommended)
+    uv run mentoring-report --afm 071477247
+
+    # Or with --with flag (installs package temporarily)
+    uv run --with . mentoring-report --afm 071477247
 
     # Direct folder path (backward compatible)
-    uv run generate_mentoring_report_auto.py "path/to/business/folder"
+    uv run mentoring-report "path/to/business/folder"
 
     # Interactive prompt
-    uv run generate_mentoring_report_auto.py
+    uv run mentoring-report
 
 Example:
-    uv run generate_mentoring_report_auto.py --afm 071477247
+    uv run mentoring-report --afm 071477247
 """
 
 import sys
@@ -258,50 +261,10 @@ def compile_final_report(sections: list[dict], company_info: dict, output_path: 
             video_recommendations = section.get('video_recommendations', [])
             break
 
-    # If no videos in Section 8, add defaults
+    # If no videos in Section 8, skip videos entirely (don't use fake placeholders)
     if not video_recommendations:
-        video_recommendations = [
-            {
-                "title": "AI for Small Business: Complete Guide",
-                "channel": "AI Business School",
-                "url": "https://www.youtube.com/watch?v=example1",
-                "duration": "15:30",
-                "topic": "AI Tools for SMEs",
-                "relevance": "Πρακτικά εργαλεία AI για μικρές επιχειρήσεις"
-            },
-            {
-                "title": "Digital Marketing για Επαγγελματίες",
-                "channel": "Marketing GR",
-                "url": "https://www.youtube.com/watch?v=example2",
-                "duration": "22:15",
-                "topic": "Digital Marketing",
-                "relevance": "Στρατηγικές online marketing για ελληνικές επιχειρήσεις"
-            },
-            {
-                "title": "Οικονομική Διαχείριση ΜμΕ",
-                "channel": "Small Business Finance GR",
-                "url": "https://www.youtube.com/watch?v=example3",
-                "duration": "18:45",
-                "topic": "Financial Management",
-                "relevance": "Οικονομική διαχείριση και προγραμματισμός"
-            },
-            {
-                "title": "ΕΣΠΑ 2021-2027 - Οδηγός Χρηματοδότησης",
-                "channel": "ΕΣΠΑ Info",
-                "url": "https://www.youtube.com/watch?v=example4",
-                "duration": "28:00",
-                "topic": "ΕΣΠΑ Funding",
-                "relevance": "Αξιοποίηση προγραμμάτων ΕΣΠΑ"
-            },
-            {
-                "title": "Ψηφιακός Μετασχηματισμός Επιχειρήσεων",
-                "channel": "Digital Transformation GR",
-                "url": "https://www.youtube.com/watch?v=example5",
-                "duration": "20:00",
-                "topic": "Digital Transformation",
-                "relevance": "Στρατηγική ψηφιακής αναβάθμισης"
-            }
-        ]
+        logger.warning("No video recommendations found in Section 8. Videos will be omitted from the report.")
+        video_recommendations = []
 
     report = {
         "company_name": company_info.get('company_name', ''),
