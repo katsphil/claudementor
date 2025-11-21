@@ -92,7 +92,7 @@ echo Launching mentoring report generator...
 echo ========================================
 echo.
 
-uv run mentoring-report
+uv run python -m src.generate_mentoring_report_auto
 
 if !ERRORLEVEL! NEQ 0 (
     echo.
