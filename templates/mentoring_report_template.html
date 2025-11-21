@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title | default('Comprehensive Mentoring Report') }}</title>
+    <style>
+        /* Professional Greek SME Mentoring Report Styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #ffffff;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+
+        /* Header with Logo */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 3px solid #2980b9;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-height: 60px;
+            width: auto;
+        }
+
+        .header-info {
+            text-align: right;
+            color: #7f8c8d;
+        }
+
+        .header-info h1 {
+            color: #2980b9;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header-info .subtitle {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+
+        /* Report Title */
+        .report-title {
+            text-align: center;
+            margin: 30px 0 40px 0;
+        }
+
+        .report-title h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .report-title .company-info {
+            background: #ecf0f1;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2980b9;
+            margin: 20px 0;
+        }
+
+        /* Executive Summary */
+        .executive-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #27ae60;
+            margin-bottom: 30px;
+        }
+
+        .executive-summary h2 {
+            color: #27ae60;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        /* Section Styling */
+        .section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .section-content {
+            border: 1px solid #e1e8ed;
+            border-top: none;
+            padding: 25px;
+            border-radius: 0 0 8px 8px;
+            background: white;
+        }
+
+        .section h3 {
+            color: #34495e;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 10px 0 10px 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table thead {
+            background: #34495e;
+            color: white;
+        }
+
+        .data-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .data-table tbody tr:hover {
+            background: #e8f4fd;
+        }
+
+        /* KPI Cards */
+        .kpi-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 200px;
+            flex: 1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2980b9;
+            margin-bottom: 5px;
+        }
+
+        .kpi-card .kpi-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Highlights and Badges */
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border-color: #00b894;
+            color: #00b894;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-color: #fdcb6e;
+            color: #e17055;
+        }
+
+        .info {
+            background: #e8f4fd;
+            border-color: #74b9ff;
+            color: #0984e3;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-right: 5px;
+        }
+
+        .badge.success { background: #00b894; color: white; }
+        .badge.warning { background: #fdcb6e; color: #2c3e50; }
+        .badge.info { background: #74b9ff; color: white; }
+        .badge.danger { background: #e17055; color: white; }
+        .badge-υψηλή { background: #e74c3c; color: white; }
+        .badge-κρίσιμη { background: #c0392b; color: white; }
+        .badge-μέτρια { background: #f39c12; color: white; }
+        .badge-χαμηλή { background: #3498db; color: white; }
+
+        /* Action Items */
+        .action-plan {
+            background: #f8f9fa;
+            border-left: 4px solid #fd79a8;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-date {
+            background: #2980b9;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+            margin-right: 15px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            border-top: 1px solid #e1e8ed;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { font-size: 12px; }
+            .container { max-width: none; margin: 0; padding: 15px; }
+            .section { page-break-inside: avoid; margin-bottom: 25px; }
+            .header { page-break-after: avoid; }
+        }
+
+        /* Greek Text Support */
+        .greek {
+            font-family: 'Times New Roman', serif;
+        }
+
+        /* Links */
+        a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Legal Links Styling */
+        .legal-links {
+            background: #f8f9fa;
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .legal-category {
+            margin-bottom: 20px;
+        }
+
+        .legal-category h4 {
+            color: #e74c3c;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legal-link {
+            display: block;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            text-decoration: none;
+            color: #2980b9;
+            transition: all 0.2s ease;
+        }
+
+        .legal-link:hover {
+            background: #e8f4fd;
+            border-color: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .legal-link .link-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+
+        .legal-link .link-url {
+            font-size: 11px;
+            color: #7f8c8d;
+            word-break: break-all;
+        }
+
+        /* Video Recommendations Styling */
+        .video-recommendations {
+            background: #f8f9fa;
+            border-left: 4px solid #FF0000;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .video-category {
+            margin-bottom: 20px;
+        }
+
+        .video-category h4 {
+            color: #FF0000;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .video-item {
+            display: block;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .video-item:hover {
+            background: #fff5f5;
+            border-color: #FF0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.1);
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .video-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .video-icon {
+            background: #FF0000;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .video-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2c3e50;
+            line-height: 1.4;
+        }
+
+        .video-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .video-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .video-badge.duration {
+            background: #e8f4fd;
+            color: #0984e3;
+        }
+
+        .video-badge.level {
+            background: #fff3cd;
+            color: #e17055;
+        }
+
+        .video-badge.level.beginner {
+            background: #d4edda;
+            color: #00b894;
+        }
+
+        .video-badge.level.intermediate {
+            background: #fff3cd;
+            color: #f39c12;
+        }
+
+        .video-badge.level.advanced {
+            background: #f8d7da;
+            color: #e74c3c;
+        }
+
+        .video-channel {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .video-topic {
+            font-size: 12px;
+            color: #74b9ff;
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header { flex-direction: column; text-align: center; gap: 15px; }
+            .kpi-container { flex-direction: column; }
+            .timeline-item { flex-direction: column; gap: 10px; }
+            .timeline-date { align-self: flex-start; }
+            .legal-links { padding: 15px; }
+            .video-recommendations { padding: 15px; }
+            .video-header { flex-direction: column; gap: 8px; }
+            .video-meta { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Logo -->
+        <div class="header">
+            {% if logo_base64 %}
+            <img src="data:image/jpeg;base64,{{ logo_base64 }}" alt="Microsmart Logo" class="logo">
+            {% else %}
+            <img src="assets/microsmart logo.jpeg" alt="Microsmart Logo" class="logo">
+            {% endif %}
+            <div class="header-info">
+                <h1>Business Mentoring Report</h1>
+                <div class="subtitle">Professional SME Advisory Services</div>
+                <div class="subtitle">{{ generation_date | default('Generated: ' + now().strftime('%d/%m/%Y')) }}</div>
+            </div>
+        </div>
+
+        <!-- Report Title -->
+        <div class="report-title">
+            <h1>{{ report_title | default('Comprehensive Mentoring Report') }}</h1>
+            <div class="company-info">
+                <strong>{{ company_name | default('Greek SME Business') }}</strong>
+                {% if afm %} | AFM: {{ afm }}{% endif %}
+                {% if kad %} | ΚΑΔ: {{ kad }}{% endif %}
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        {% if executive_summary %}
+        <div class="executive-summary">
+            <h2>Executive Summary</h2>
+            <p>{{ executive_summary }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Sections -->
+        {% for section in sections %}
+        <div class="section" id="section-{{ loop.index }}">
+            <div class="section-header">
+                <h2>{{ loop.index }}. {{ section.title }}</h2>
+            </div>
+            <div class="section-content">
+                {{ section.content | safe }}
+
+                {% if section.kpis %}
+                <div class="kpi-container">
+                    {% for kpi in section.kpis %}
+                    <div class="kpi-card">
+                        <div class="kpi-value">{{ kpi.value }}</div>
+                        <div class="kpi-label">{{ kpi.name or kpi.label }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if section.table %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            {% for header in section.table.headers %}
+                            <th>{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in section.table.rows %}
+                        <tr>
+                            {% for cell in row %}
+                            <td>{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+
+                {% if section.action_items %}
+                <div class="action-plan">
+                    <h3>Action Items</h3>
+                    {% for item in section.action_items %}
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ item.timeline }}</div>
+                        <div>
+                            {% if item.priority %}<span class="badge badge-{{ item.priority | lower }}">{{ item.priority }}</span>{% endif %}
+                            <strong>{{ item.title or item.action or item.item }}</strong><br>
+                            {% if item.description %}<p style="margin: 8px 0; color: #555;">{{ item.description }}</p>{% endif %}
+                            {% if item.expected_impact %}
+                            <div style="background: #e8f5e9; padding: 8px 12px; margin: 8px 0; border-left: 3px solid #4caf50; border-radius: 4px;">
+                                <strong style="color: #2e7d32;">Αναμενόμενα Αποτελέσματα:</strong> {{ item.expected_impact }}
+                            </div>
+                            {% endif %}
+                            <small>
+                                {% if item.owner %}{{ item.owner }}{% endif %}
+                                {% if item.owner and (item.resources_needed or item.cost) %} | {% endif %}
+                                {% if item.resources_needed %}{{ item.resources_needed }}{% elif item.cost %}{{ item.cost }}{% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if section.legal_links %}
+                <div class="legal-links">
+                    <h3>Χρήσιμοι Σύνδεσμοι & Νομοθεσία</h3>
+                    {% set grouped_links = section.legal_links | groupby('category') %}
+                    {% for category, links in grouped_links %}
+                    <div class="legal-category">
+                        <h4>{{ category }}</h4>
+                        {% for link in links %}
+                        <a href="{{ link.url }}" class="legal-link" target="_blank">
+                            <div class="link-title">{{ link.title }}</div>
+                            <div class="link-url">{{ link.url }}</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if section.video_recommendations %}
+                <div class="video-recommendations">
+                    <h3>🎥 Προτεινόμενα Εκπαιδευτικά Video</h3>
+                    {% set grouped_videos = section.video_recommendations | groupby('topic') %}
+                    {% for topic, videos in grouped_videos %}
+                    <div class="video-category">
+                        <h4>{{ topic }}</h4>
+                        {% for video in videos %}
+                        <a href="{{ video.url }}" class="video-item" target="_blank">
+                            <div class="video-header">
+                                <div class="video-icon">▶</div>
+                                <div class="video-title">{{ video.title }}</div>
+                            </div>
+                            <div class="video-meta">
+                                <span class="video-badge duration">⏱ {{ video.duration }}</span>
+                                {% if video.level %}<span class="video-badge level {{ video.level.lower() }}">{{ video.level }}</span>{% endif %}
+                            </div>
+                            <div class="video-channel">🎥 {{ video.channel }}</div>
+                            <div class="video-topic">🎯 {{ video.topic }}</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-content">
+                <div>
+                    Generated by Microsmart Business Advisory | Professional SME Mentoring Services
+                </div>
+                <div>
+                    {{ generation_date | default(now().strftime('%d/%m/%Y %H:%M')) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

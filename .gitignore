@@ -23,10 +23,6 @@ __pycache__/
 
 # Generated outputs
 working_dir/
-mentoring_report_*.html
-mentoring_analysis.json
-output.json
-preprocessed_data.json
 
 # IDE
 .vscode/
