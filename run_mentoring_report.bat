@@ -9,121 +9,40 @@ echo.
 :: Check for UV Package Manager
 echo [1/4] Checking UV...
 where uv >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo UV not found. Installing...
-    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-    if %ERRORLEVEL% NEQ 0 (
-        echo [ERROR] Failed to install UV
-        echo Please install manually: https://docs.astral.sh/uv/
-        pause
-        exit /b 1
-    )
-    echo UV installed successfully
-    echo Please restart this script
+if !ERRORLEVEL! NEQ 0 (
+    echo [ERROR] UV not found
+    echo Please install UV first: https://docs.astral.sh/uv/
     pause
-    exit /b 0
+    exit /b 1
 )
 echo [OK] UV found
 echo.
 
-:: Check for FFmpeg
-echo [2/5] Checking FFmpeg for video processing...
+:: Check for FFmpeg (optional - just warn if missing)
+echo [2/4] Checking FFmpeg...
 ffmpeg -version >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo FFmpeg not found. Attempting automatic installation...
-
-    REM Try winget first (built into Windows 10/11)
-    echo Trying Windows Package Manager (winget)...
-    winget install --id=Gyan.FFmpeg --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        echo [OK] FFmpeg installed via winget
-        goto ffmpeg_success
-    )
-
-    REM Try chocolatey
-    echo winget failed. Trying Chocolatey...
-    choco install ffmpeg -y >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        echo [OK] FFmpeg installed via Chocolatey
-        goto ffmpeg_success
-    )
-
-    REM Try scoop
-    echo Chocolatey failed. Trying Scoop...
-    scoop install ffmpeg >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        echo [OK] FFmpeg installed via Scoop
-        goto ffmpeg_success
-    )
-
-    REM All automatic methods failed
-    echo.
-    echo [WARNING] Could not automatically install FFmpeg
-    echo FFmpeg is required for video transcription support
-    echo.
-    echo To install FFmpeg manually:
-    echo   1. Download from: https://ffmpeg.org/download.html
-    echo   2. Install via winget: winget install Gyan.FFmpeg
-    echo   3. Install via Chocolatey: choco install ffmpeg
-    echo   4. Install via Scoop: scoop install ffmpeg
-    echo.
-    echo You can continue without FFmpeg, but video files will be skipped.
-    echo.
-    set /p CONTINUE="Continue anyway? (y/n): "
-    if /i "!CONTINUE!" NEQ "y" (
-        echo Installation cancelled
-        pause
-        exit /b 1
-    )
-    goto ffmpeg_done
+if !ERRORLEVEL! NEQ 0 (
+    echo [WARNING] FFmpeg not found - video transcription will be skipped
+    echo To install: winget install Gyan.FFmpeg
+) else (
+    echo [OK] FFmpeg found
 )
-
-:ffmpeg_success
-echo FFmpeg installed! PATH will be refreshed automatically...
-
-:ffmpeg_found
-echo [OK] FFmpeg found
-
-:ffmpeg_done
 echo.
 
 :: Check for Claude Code CLI
-echo [3/5] Checking Claude Code...
+echo [3/4] Checking Claude Code...
 where claude >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
+if !ERRORLEVEL! NEQ 0 (
     echo [ERROR] Claude Code not found
-    echo.
-    echo Install Claude Code:
-    echo   powershell -ExecutionPolicy ByPass -c "irm https://claude.ai/install.ps1 | iex"
-    echo.
-    echo After installation, restart terminal and run this script again
+    echo Install: powershell -ExecutionPolicy ByPass -c "irm https://claude.ai/install.ps1 | iex"
     pause
     exit /b 1
 )
 echo [OK] Claude Code found
 echo.
 
-:: Check for document-skills plugin
-echo [4/5] Checking document-skills plugin...
-claude skill list 2>nul | findstr /C:"document-skills" >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo [WARNING] Document-skills plugin not found
-    echo.
-    echo In Claude Code, run these commands:
-    echo   /plugin marketplace add anthropics/skills
-    echo   /plugin install document-skills@anthropic-agent-skills
-    echo.
-    set /p CONTINUE="Continue anyway? (y/n): "
-    if /i "!CONTINUE!" NEQ "y" (
-        exit /b 1
-    )
-) else (
-    echo [OK] Document-skills found
-)
-echo.
-
 :: Check for .env file
-echo [5/5] Checking configuration...
+echo [4/4] Checking configuration...
 if not exist ".env" (
     if exist ".env.example" (
         echo Creating .env from template...
@@ -131,60 +50,55 @@ if not exist ".env" (
         echo [OK] Created .env
         echo.
         echo [IMPORTANT] Edit .env with your SharePoint credentials
-        echo See README_AFM.md for details
         echo.
         notepad .env
-        echo.
-        set /p CONTINUE="Press Enter when ready..."
+        pause
     ) else (
         echo [ERROR] .env.example not found
         pause
         exit /b 1
     )
 ) else (
-    findstr /C:"your-tenant-id-here" ".env" >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        echo [WARNING] .env has placeholder values
-        echo Edit with real credentials before using AFM mode
-        echo.
-    ) else (
-        echo [OK] Configuration found
-    )
+    echo [OK] Configuration found
 )
 echo.
 
 :: Install Python dependencies and package
+echo ========================================
 echo Installing dependencies and package...
+echo ========================================
+echo.
+
 uv sync
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Failed to install dependencies
+if !ERRORLEVEL! NEQ 0 (
+    echo [ERROR] Failed to sync dependencies
     pause
     exit /b 1
 )
 
-echo Installing package in editable mode...
 uv pip install -e .
-if %ERRORLEVEL% NEQ 0 (
+if !ERRORLEVEL! NEQ 0 (
     echo [ERROR] Failed to install package
     pause
     exit /b 1
 )
-echo [OK] Dependencies and package installed
+
+echo [OK] Installation complete
 echo.
 
 :: Launch application
 echo ========================================
-echo Launching application...
+echo Launching mentoring report generator...
 echo ========================================
 echo.
 
 uv run mentoring-report
 
-if %ERRORLEVEL% NEQ 0 (
+if !ERRORLEVEL! NEQ 0 (
     echo.
     echo [ERROR] Application failed. Check app.log for details.
     pause
-    exit /b %ERRORLEVEL%
+    exit /b !ERRORLEVEL!
 )
 
 echo.
