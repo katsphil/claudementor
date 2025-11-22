@@ -67,6 +67,12 @@ def get_section_1_prompt(section_num, company_info, relevant_files):
 
 **Style**: Act as a senior business mentor providing extensive, personalized guidance. Be verbose, detailed, and actionable.
 
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
+
 **Output Format**: Return ONLY valid JSON:
 ```json
 {{
@@ -116,6 +122,12 @@ def get_section_2_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (4-6 items): Credit score improvement, financial management, accounting software, credit line
 
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
+
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
 {{
@@ -164,6 +176,12 @@ def get_section_3_prompt(section_num, company_info, relevant_files):
    - Target segments with demographics and strategy
 
 4. **Action Items** (5-6): Competitive intelligence, pricing analysis, partnership development
+
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
 
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
@@ -221,6 +239,12 @@ def get_section_4_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (4-5): ΕΣΠΑ application, bank negotiations, investment plan
 
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
+
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
 {{
@@ -270,6 +294,12 @@ def get_section_5_prompt(section_num, company_info, relevant_files):
    - Tool recommendations comparison
 
 4. **Action Items** (5-6): Website development/improvement, social media, CRM, SEO
+
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
 
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
@@ -321,6 +351,12 @@ def get_section_6_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (4-5): Software selection, implementation, training
 
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
+
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
 {{
@@ -370,6 +406,12 @@ def get_section_7_prompt(section_num, company_info, relevant_files):
    - Initiative ROI analysis
 
 4. **Action Items** (5-6): Energy audit, waste management, governance policies
+
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
 
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
@@ -426,6 +468,12 @@ def get_section_8_prompt(section_num, company_info, relevant_files):
    - Focus on practical AI/business applications for Greek SMEs
    - Only include videos you have confirmed exist through WebSearch
 
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
+
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
 {{
@@ -476,6 +524,12 @@ def get_section_9_prompt(section_num, company_info, relevant_files):
 3. **Tables** (if applicable): Psychometric profile breakdown with scores
 
 4. **Action Items** (4-5): Leadership coaching, team building, skill development, assessment follow-up
+
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
 
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
@@ -528,6 +582,12 @@ def get_section_10_prompt(section_num, company_info, relevant_files):
    - Success metrics dashboard
 
 4. **Action Items** (4-5): Project management setup, milestone reviews, tracking systems
+
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
 
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
@@ -582,6 +642,12 @@ def get_section_11_prompt(section_num, company_info, relevant_files):
 4. **Action Items** (4-6): Compliance audits, policy updates, filings
 
 **IMPORTANT**: Always include ΑΑΔΕ portal (https://1521.aade.gr/) in recommendations.
+
+**CRITICAL - JSON String Escaping**: When generating JSON:
+- Escape ALL double quotes inside string values as \"
+- Escape ALL backslashes as \\
+- This applies especially to the "content" field with HTML and Greek text
+- Example: "Greek text with \"quoted phrase\" inside"
 
 **CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
 ```json
