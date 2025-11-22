@@ -154,7 +154,7 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
             ],
             input=prompt,
             capture_output=True,
-            text=True,
+            encoding='utf-8',
             # No timeout - let complex sections take as long as needed
             cwd=str(output_dir)
         )
@@ -222,7 +222,7 @@ def generate_section_via_agent(section_num: int, company_info: dict, relevant_fi
         return None
 
 
-def compile_final_report(sections: list[dict], company_info: dict, output_path: Path):
+def compile_final_report(sections: list[dict], company_info: dict, output_path: Path, logger: logging.Logger):
     """Compile all sections into final report JSON."""
 
     # Generate executive summary
@@ -600,7 +600,7 @@ def main():
     # Phase 5: Compile Report
     logger.info("Phase 5: Compiling final report...")
     final_report_path = output_dir / "mentoring_report_complete.json"
-    report = compile_final_report(sections, company_info, final_report_path)
+    report = compile_final_report(sections, company_info, final_report_path, logger)
 
     # Phase 6: Render HTML
     logger.info("Phase 6: Rendering HTML report...")

@@ -115,9 +115,26 @@ def get_section_2_prompt(section_num, company_info, relevant_files):
    - Cost breakdown analysis
 
 4. **Action Items** (4-6 items): Credit score improvement, financial management, accounting software, credit line
-   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
-Return ONLY valid JSON with the schema above."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 2,
+  "title": "Financial Health & Performance Optimization",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units", "target": "optional target", "status": "optional status"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 2 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_3_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 3: Market Analysis & Competitive Strategy** for Greek SME.
@@ -147,9 +164,26 @@ def get_section_3_prompt(section_num, company_info, relevant_files):
    - Target segments with demographics and strategy
 
 4. **Action Items** (5-6): Competitive intelligence, pricing analysis, partnership development
-   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 3,
+  "title": "Market Analysis & Competitive Strategy",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 3 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_4_prompt(section_num, company_info, relevant_files):
     from datetime import datetime
@@ -187,7 +221,25 @@ def get_section_4_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (4-5): ΕΣΠΑ application, bank negotiations, investment plan
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 4,
+  "title": "Funding Strategy & Investment Planning",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 4 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_5_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 5: Digital Transformation Roadmap** for Greek SME.
@@ -218,9 +270,26 @@ def get_section_5_prompt(section_num, company_info, relevant_files):
    - Tool recommendations comparison
 
 4. **Action Items** (5-6): Website development/improvement, social media, CRM, SEO
-   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 5,
+  "title": "Digital Transformation Roadmap",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 5 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_6_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 6: Financial Management Systems** for Greek SME.
@@ -252,7 +321,25 @@ def get_section_6_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (4-5): Software selection, implementation, training
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 6,
+  "title": "Financial Management Systems",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 6 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_7_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 7: ESG Implementation Framework** for Greek SME.
@@ -284,7 +371,25 @@ def get_section_7_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (5-6): Energy audit, waste management, governance policies
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 7,
+  "title": "ESG Implementation Framework",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 7 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_8_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 8: AI & Innovation Strategy** for Greek SME.
@@ -312,7 +417,6 @@ def get_section_8_prompt(section_num, company_info, relevant_files):
 3. **Tables** (1): AI tools comparison for this industry
 
 4. **Action Items** (4-5): AI pilot project, training, tool implementation
-   Format: [{{"title": "...", "priority": "Υψηλή/Μέτρια/Χαμηλή", "timeline": "X μήνες", "description": "...", "expected_impact": "Αναμενόμενα αποτελέσματα...", "resources_needed": "..."}}]
 
 5. **VIDEO RECOMMENDATIONS** (EXACTLY 5):
    - MANDATORY: Use the WebSearch tool to search YouTube for real, existing videos
@@ -322,7 +426,28 @@ def get_section_8_prompt(section_num, company_info, relevant_files):
    - Focus on practical AI/business applications for Greek SMEs
    - Only include videos you have confirmed exist through WebSearch
 
-Return ONLY valid JSON with all 5 video_recommendations."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 8,
+  "title": "AI & Innovation Strategy",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ],
+  "video_recommendations": [
+    {{"title": "Video title", "channel": "Channel name", "url": "https://www.youtube.com/watch?v=...", "duration": "MM:SS", "topic": "Video topic description", "relevance": "Why relevant to this business in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 8 (not "section"), include EXACTLY 5 video_recommendations with all 6 fields (title, channel, url, duration, topic, relevance)."""
 
 def get_section_9_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 9: Leadership Development & Team Building** for Greek SME.
@@ -352,7 +477,25 @@ def get_section_9_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (4-5): Leadership coaching, team building, skill development, assessment follow-up
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 9,
+  "title": "Leadership Development & Team Building",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 9 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_10_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 10: Implementation Roadmap & Success Metrics** for Greek SME.
@@ -386,7 +529,25 @@ def get_section_10_prompt(section_num, company_info, relevant_files):
 
 4. **Action Items** (4-5): Project management setup, milestone reviews, tracking systems
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 10,
+  "title": "Implementation Roadmap & Success Metrics",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 10 (not "section"), use "label" for KPIs, use "title" for action_items."""
 
 def get_section_11_prompt(section_num, company_info, relevant_files):
     return f"""Generate **Section 11: Legal & Regulatory Compliance Framework** for Greek SME.
@@ -422,4 +583,22 @@ def get_section_11_prompt(section_num, company_info, relevant_files):
 
 **IMPORTANT**: Always include ΑΑΔΕ portal (https://1521.aade.gr/) in recommendations.
 
-Return ONLY valid JSON."""
+**CRITICAL - Output Format**: Return ONLY valid JSON with this EXACT structure:
+```json
+{{
+  "number": 11,
+  "title": "Legal & Regulatory Compliance Framework",
+  "content": "<div>HTML formatted content in Greek...</div>",
+  "kpis": [
+    {{"label": "KPI label in Greek", "value": "value with units"}}
+  ],
+  "tables": [
+    {{"title": "Table title in Greek", "headers": ["Column 1", "Column 2", "..."], "rows": [["Cell 1,1", "Cell 1,2", "..."], ["Cell 2,1", "Cell 2,2", "..."]]}}
+  ],
+  "action_items": [
+    {{"title": "Action title in Greek", "priority": "Υψηλή|Μέτρια|Χαμηλή", "timeline": "X μήνες", "description": "Detailed description in Greek", "expected_impact": "Expected results in Greek", "resources_needed": "Required resources in Greek"}}
+  ]
+}}
+```
+
+**MANDATORY**: Use "number": 11 (not "section"), use "label" for KPIs, use "title" for action_items."""
