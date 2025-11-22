@@ -131,7 +131,7 @@ def classify_files_with_llm(files: list[Path], preprocessed_data_map: dict = Non
             ],
             input=prompt,
             capture_output=True,
-            text=True,
+            encoding='utf-8',
             timeout=180  # 3 minute timeout for classification
         )
 
