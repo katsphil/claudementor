@@ -222,10 +222,14 @@ def get_section_4_prompt(section_num, company_info, relevant_files):
 **IMPORTANT - Language**: Think and analyze in English for clarity, but write ALL final output content in Greek. Technical terms may remain in English where appropriate (e.g., "ΕΣΠΑ", "ROI", "crowdfunding").
 
 1. **Content (HTML)**:
-   - ΕΣΠΑ 2021-2027 program analysis (5+ relevant programs)
-     Use WebSearch to verify current program availability on espa.gr
-     Only include programs with open calls or upcoming deadlines after {current_date}
-     Include verified submission deadlines from live sources
+   - ΕΣΠΑ 2021-2027 program analysis
+     **CRITICAL - Active Programs Only**:
+     • MANDATORY: Use WebSearch to verify EACH program on espa.gr
+     • ONLY include programs with submission deadlines AFTER {current_date}
+     • EXCLUDE all programs from ΕΣΠΑ 2007-2013 and 2014-2020 periods
+     • DO NOT recommend expired programs under any circumstances
+     • If fewer than 5 active programs exist, recommend only active ones
+     • For EACH program, verify and state: deadline date, current status, source URL
    - Traditional bank financing options
    - Alternative financing (crowdfunding, angel investors, leasing)
    - ROI calculations for proposed investments
