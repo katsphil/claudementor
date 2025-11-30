@@ -61,7 +61,9 @@ def get_section_1_prompt(section_num, company_info, relevant_files):
 
 2. **KPIs** (3-6 items): Business structure metrics, industry positioning
 
-3. **Tables** (if relevant): SWOT analysis, business model canvas
+3. **Tables** (REQUIRED - 2 tables):
+   - **Business Model Canvas**: 9-block canvas with key elements (Key Partners, Key Activities, Value Propositions, Customer Relationships, Customer Segments, Key Resources, Channels, Cost Structure, Revenue Streams)
+   - **SWOT Analysis**: Comprehensive analysis with Strengths, Weaknesses, Opportunities, Threats (minimum 3-5 items per quadrant)
 
 4. **Action Items** (3-6 items): Specific, actionable steps with timelines, owners, and costs
 
